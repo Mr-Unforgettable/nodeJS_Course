@@ -5,8 +5,18 @@ import adminRoutes from "./routes/admin";
 import shopRoutes from "./routes/shop";
 import pageNotFound from "./routes/404";
 
+import pool from './utils/database';
+
 const app = express();
 const PORT = 3000;
+
+pool.execute(`SELECT * FROM shop.products`)
+  .then((results) => {
+    console.log(results);
+  })
+  .catch(error => {
+    console.error('Error fetching table from the database', error);
+  })
 
 // EJS
 app.set("view engine", "ejs");
