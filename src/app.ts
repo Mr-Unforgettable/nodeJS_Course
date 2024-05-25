@@ -1,15 +1,13 @@
 import express from "express";
-import dotenv from "dotenv";
 import path from "node:path";
 
 import adminRoutes from "./routes/admin";
 import shopRoutes from "./routes/shop";
 import pageNotFound from "./routes/404";
 
-dotenv.config();
-
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = 3000;
+
 
 // EJS
 app.set("view engine", "ejs");
