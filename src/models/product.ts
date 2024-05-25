@@ -1,21 +1,4 @@
-import { fileExists, readJSONFile, writeJSONFile } from "../utils/fileOperations";
-import path from "node:path";
-import { Cart } from "./cart";
-
-const mainModule = require.main || module;
-const dataFilePath = path.join(
-  path.dirname(mainModule.filename),
-  "data",
-  "products.json"
-);
-
-export interface Product {
-  title: string;
-  imageUrl?: string;
-  description?: string;
-  price?: string;
-  id?: string;
-}
+import db from "../utils/database";
 
 export class Product {
   constructor(
@@ -28,45 +11,52 @@ export class Product {
 
   async save(): Promise<void> {
     try {
-      const products = await Product.fetchAll() as Product[];
+      let result;
+      let queryMessage;
 
       if (!this.id) {
         this.id = Math.random().toString(36).substring(2, 9);
-
-        if (this.isValid()) {
-          products.push(this);
-        } else {
-          console.error(
-            "Incomplete product information. Cannot add new product."
-          );
-          return;
-        }
+        result = await db.execute(
+          `INSERT INTO shop.products (
+          id,
+          title, 
+          price, 
+          description, 
+          imageUrl
+        ) VALUES 
+        (?, ?, ?, ?, ?)`,
+          [this.id, this.title, this.price, this.description, this.imageUrl]
+        );
+        queryMessage = "1 row inserted into products table.";
       } else {
-        const index = products.findIndex((prod) => prod.id === this.id);
-
-        if (index !== -1) {
-          products[index] = this;
-        } else {
-          console.error("Product not found. Cannot update.");
-          return;
-        }
+        result = await db.execute(
+          `UPDATE shop.products SET
+          title = ?,
+          price = ?,
+          description = ?,
+          imageUrl = ?
+        WHERE id = ?
+        `,
+          [this.title, this.price, this.description, this.imageUrl, this.id]
+        );
+        queryMessage = "Updated the products table.";
       }
 
-      await writeJSONFile(dataFilePath, products);
+      if (result) {
+        console.log(queryMessage);
+      } else {
+        console.error("failed to save product");
+        return;
+      }
     } catch (error) {
       console.error("Error saving products:", error);
     }
   }
 
-  private isValid(): boolean {
-    return (
-      !!this.title && !!this.price && !!this.imageUrl && !!this.description
-    );
-  }
-
   static async fetchAll(): Promise<Product[]> {
     try {
-      return await readJSONFile<Product[]>(dataFilePath);
+      const [rows] = await db.execute(`SELECT * FROM shop.products`);
+      return rows as Product[];
     } catch (error) {
       console.error("Error fetching products:", error);
       return [];
@@ -76,9 +66,7 @@ export class Product {
   static async findById(id: string): Promise<Product | undefined> {
     try {
       const products = await Product.fetchAll();
-      const foundProduct = products.find(
-        (product) => product.id === id
-      );
+      const foundProduct = products.find((product) => product.id === id);
       return foundProduct;
     } catch (error) {
       console.error("Error finding product by ID:", error);
@@ -88,28 +76,18 @@ export class Product {
 
   static async deleteById(id: string): Promise<void> {
     try {
-      if (!await fileExists(dataFilePath)) {
-        return;
-      }
-      
-      const products = await Product.fetchAll();
-      const existingProductIndex = products.findIndex(prod => prod.id === id);
+      const result = await db.execute(
+        `DELETE FROM shop.products
+        WHERE id = ?`,
+        [id]
+      );
 
-      if (existingProductIndex === -1) {
-        return;
-      }
-
-      const product = products[existingProductIndex];
-
-      if (product.price) {
-        await Cart.removeProduct(id, product.price);
+      if (result) {
+        console.log("Product deleted successfully");
       } else {
-        await Cart.removeProduct(id);
+        console.error("failed to delete product: Result is undefined or null");
+        return;
       }
-
-      products.splice(existingProductIndex, 1);
-
-      await writeJSONFile(dataFilePath, products);
     } catch (error) {
       console.error("Error deleting product:", error);
       throw new Error("Could not delete product");
