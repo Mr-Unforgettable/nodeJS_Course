@@ -12,7 +12,7 @@ const PORT = 3000;
 
 pool.execute(`SELECT * FROM shop.products`)
   .then((results) => {
-    console.log(results);
+    console.log(results[0], results[1]);
   })
   .catch(error => {
     console.error('Error fetching table from the database', error);
