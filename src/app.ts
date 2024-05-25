@@ -8,7 +8,6 @@ import pageNotFound from "./routes/404";
 const app = express();
 const PORT = 3000;
 
-
 // EJS
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
