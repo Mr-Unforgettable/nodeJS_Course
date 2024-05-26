@@ -1,3 +1,4 @@
+import { RowDataPacket } from "mysql2";
 import db from "../utils/database";
 
 export class Product {
@@ -31,12 +32,12 @@ export class Product {
       } else {
         result = await db.execute(
           `UPDATE shop.products SET
-          title = ?,
-          price = ?,
-          description = ?,
-          imageUrl = ?
-        WHERE id = ?
-        `,
+            title = ?,
+            price = ?,
+            description = ?,
+            imageUrl = ?
+           WHERE id = ?
+          `,
           [this.title, this.price, this.description, this.imageUrl, this.id]
         );
         queryMessage = "Updated the products table.";
@@ -65,8 +66,28 @@ export class Product {
 
   static async findById(id: string): Promise<Product | undefined> {
     try {
-      const products = await Product.fetchAll();
-      const foundProduct = products.find((product) => product.id === id);
+      const [rows] = await db.execute(
+        `
+          SELECT * FROM shop.products
+          WHERE id = ? 
+      `,
+        [id]
+      );
+      if (!Array.isArray(rows)) {
+        console.error("Unexpected result from database: rows is not any array");
+        return undefined;
+      }
+      if (rows.length === 0) {
+        return undefined;
+      }
+      const productData = rows[0] as RowDataPacket;
+      const foundProduct = new Product(
+        productData.title,
+        productData.imageUrl,
+        productData.description,
+        productData.price,
+        productData.id,
+      );
       return foundProduct;
     } catch (error) {
       console.error("Error finding product by ID:", error);
