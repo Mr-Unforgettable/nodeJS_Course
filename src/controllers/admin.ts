@@ -1,3 +1,129 @@
+// import { RequestHandler } from "express";
+// import { Product } from "../models/product";
+//
+// const renderProductForm = (
+//   res: any,
+//   pageTitle: string,
+//   path: string,
+//   editing: boolean,
+//   product?: Product
+// ) => {
+//   res.render("admin/edit-product", {
+//     pageTitle,
+//     path,
+//     editing,
+//     product,
+//   });
+// };
+//
+// const handleServerError = (
+//   res: any,
+//   error: any,
+//   message: string = "Internal Server Error"
+// ) => {
+//   console.error(message, error);
+//   res.status(500).send(message);
+// };
+//
+// export const getAddProduct: RequestHandler = (_req, res, _next) => {
+//   renderProductForm(res, "➕ Add Product", "/admin/add-product", false);
+// };
+//
+// export const getEditProduct: RequestHandler = async (req, res, _next) => {
+//   const editMode = req.query.edit === "true";
+//   if (!editMode) {
+//     return res.redirect("/");
+//   }
+//
+//   const prodId = req.params.productID;
+//   try {
+//     const product = await Product.findById(prodId);
+//     if (!product) {
+//       return res.redirect("/");
+//     }
+//     renderProductForm(
+//       res,
+//       "📝 Edit Product",
+//       "/admin/edit-product",
+//       true,
+//       product
+//     );
+//   } catch (error) {
+//     handleServerError(res, error);
+//   }
+// };
+//
+// export const getAdminProducts: RequestHandler = async (_req, res, _next) => {
+//   try {
+//     const adminProducts = await Product.fetchAll();
+//     res.render("admin/products", {
+//       pageTitle: "🛡️ Admin Products",
+//       editing: false,
+//       prods: adminProducts,
+//       path: "/admin/products",
+//     });
+//   } catch (error) {
+//     handleServerError(res, error);
+//   }
+// };
+//
+// export const postAddProduct: RequestHandler = async (req, res, _next) => {
+//   const { title, imageUrl, price, description } = req.body;
+//
+//   if (!title || !imageUrl || !price || !description) {
+//     return res.status(400).send("Missing required fields");
+//   }
+//
+//   try {
+//     const product = new Product(title, imageUrl, description, price);
+//     await product.save();
+//     res.redirect("/");
+//   } catch (error) {
+//     handleServerError(res, error);
+//   }
+// };
+//
+// export const postEditProduct: RequestHandler = async (req, res, _next) => {
+//   const {
+//     productId: prodId,
+//     title: updatedTitle,
+//     price: updatedPrice,
+//     imageUrl: updatedImageUrl,
+//     description: updatedDescription,
+//   } = req.body;
+//
+//   try {
+//     const updatedProduct = new Product(
+//       updatedTitle,
+//       updatedImageUrl,
+//       updatedDescription,
+//       updatedPrice,
+//       prodId
+//     );
+//
+//     await updatedProduct.save();
+//     res.redirect("/admin/products");
+//   } catch (error) {
+//     handleServerError(res, error);
+//   }
+// };
+//
+// export const postDeleteProduct: RequestHandler = async (req, res, _next) => {
+//   const prodId = req.body.productId;
+//   try {
+//     const product = await Product.findById(prodId);
+//     console.log("Product Index:", product)
+//     if (product) {
+//       await Product.deleteById(prodId);
+//       res.redirect("/");
+//     } else {
+//       res.status(404).json({ message: "Product not found" });
+//     }
+//   } catch (error) {
+//     handleServerError(res, error);
+//   }
+// };
+
 import { RequestHandler } from "express";
 import { Product } from "../models/product";
 
@@ -29,15 +155,16 @@ export const getAddProduct: RequestHandler = (_req, res, _next) => {
   renderProductForm(res, "➕ Add Product", "/admin/add-product", false);
 };
 
-export const getEditProduct: RequestHandler = async (req, res, _next) => {
+export const getEditProduct: RequestHandler = async (req, res, next) => {
   const editMode = req.query.edit === "true";
   if (!editMode) {
     return res.redirect("/");
   }
 
   const prodId = req.params.productID;
+  console.log(prodId);
   try {
-    const product = await Product.findById(prodId);
+    const product = await Product.findByPk(prodId);
     if (!product) {
       return res.redirect("/");
     }
@@ -53,9 +180,9 @@ export const getEditProduct: RequestHandler = async (req, res, _next) => {
   }
 };
 
-export const getAdminProducts: RequestHandler = async (_req, res, _next) => {
+export const getAdminProducts: RequestHandler = async (req, res, next) => {
   try {
-    const adminProducts = await Product.fetchAll();
+    const adminProducts = await Product.findAll();
     res.render("admin/products", {
       pageTitle: "🛡️ Admin Products",
       editing: false,
@@ -67,59 +194,62 @@ export const getAdminProducts: RequestHandler = async (_req, res, _next) => {
   }
 };
 
-export const postAddProduct: RequestHandler = async (req, res, _next) => {
+export const postAddProduct: RequestHandler = async (req, res, next) => {
   const { title, imageUrl, price, description } = req.body;
 
   if (!title || !imageUrl || !price || !description) {
-    return res.status(400).send("Missing required fields");
+    return res.status(400).send("Missing required fields.");
   }
 
   try {
-    const product = new Product(title, imageUrl, description, price);
-    await product.save();
+    await Product.create({
+      title: title,
+      price: price,
+      imageUrl: imageUrl,
+      description: description
+    });
     res.redirect("/");
   } catch (error) {
     handleServerError(res, error);
   }
-};
+}
 
-export const postEditProduct: RequestHandler = async (req, res, _next) => {
+export const postEditProduct: RequestHandler = async (req, res, next) => {
   const {
     productId: prodId,
     title: updatedTitle,
-    price: updatedPrice,
+    price: updatePrice,
     imageUrl: updatedImageUrl,
     description: updatedDescription,
   } = req.body;
 
   try {
-    const updatedProduct = new Product(
-      updatedTitle,
-      updatedImageUrl,
-      updatedDescription,
-      updatedPrice,
-      prodId
-    );
+    const product = await Product.findByPk(prodId);
+    if (!product) {
+      return res.status(404).json({ message: "Product not found "});
+    }
 
-    await updatedProduct.save();
+    product.title = updatedTitle;
+    product.price = updatePrice;
+    product.imageUrl = updatedImageUrl;
+    product.description = updatedDescription;
+    await product.save();
     res.redirect("/admin/products");
   } catch (error) {
     handleServerError(res, error);
   }
-};
+}
 
-export const postDeleteProduct: RequestHandler = async (req, res, _next) => {
+export const postDeleteProduct: RequestHandler = async (req, res, next) => {
   const prodId = req.body.productId;
   try {
-    const product = await Product.findById(prodId);
-    console.log("Product Index:", product)
-    if (product) {
-      await Product.deleteById(prodId);
-      res.redirect("/");
-    } else {
-      res.status(404).json({ message: "Product not found" });
+    const product = await Product.findByPk(prodId);
+    if (!product) {
+      return res.status(404).json({ message: "Product not found." });
     }
+    await product.destroy();
+    res.redirect("/");
   } catch (error) {
     handleServerError(res, error);
   }
-};
+}
