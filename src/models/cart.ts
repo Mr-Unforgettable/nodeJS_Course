@@ -6,6 +6,7 @@ import {
 } from "../utils/fileOperations";
 import path from "node:path";
 import { Product as P } from "./product";
+
 const mainModule = require.main || module;
 const dataFilePath = path.join(
   path.dirname(mainModule.filename),
@@ -144,3 +145,107 @@ export class Cart {
     }
   }
 }
+
+
+//import { DataTypes, Model, UUIDV4 } from "sequelize";
+//import { sequelize } from "../utils/database";
+//import { Product } from "./product";
+//
+//export class Cart extends Model {
+//  public cartId!: string;
+//  public qty!: number;
+//  Product: any;
+//}
+//
+//Cart.init(
+//  {
+//    id: {
+//      type: DataTypes.STRING,
+//      primaryKey: true,
+//      unique: true,
+//      defaultValue: () => UUIDV4(),
+//    },
+//    qty: {
+//      type: DataTypes.INTEGER,
+//      allowNull: false,
+//      defaultValue: 1,
+//    },
+//  },
+//  {
+//    sequelize,
+//    modelName: "Cart",
+//  }
+//);
+//
+//Cart.belongsTo(Product, { foreignKey: "id" });
+//
+//export class CartService {
+//  static async fetchAll(): Promise<Cart[]> {
+//    try {
+//      const carts = await Cart.findAll();
+//      return carts;
+//    } catch (error) {
+//      console.error("Error fetching carts:", error);
+//      return [];
+//    }
+//  }
+//
+//  static async addProduct(productId: string): Promise<void> {
+//    try {
+//      const cart = await Cart.findOne({ where: { productId } });
+//      if (cart) {
+//        cart.qty += 1;
+//        await cart.save();
+//      } else {
+//        await Cart.create({ productId });
+//      }
+//    } catch (error) {
+//      console.error("Error adding product to cart:", error);
+//    }
+//  }
+//
+//  static async removeProduct(productId: string): Promise<void> {
+//    try {
+//      const cart = await Cart.findOne({ where: { productId } });
+//      if (cart) {
+//        if (cart.qty > 1) {
+//          cart.qty -= 1;
+//          await cart.save();
+//        } else {
+//          await Cart.destroy();
+//        }
+//      }
+//    } catch (error) {
+//      console.error("Error removing product from cart:", error);
+//    }
+//  }
+//
+//  static async findById(id: string): Promise<Cart | null> {
+//    try {
+//      const cart = await Cart.findByPk(id);
+//      return cart;
+//    } catch (error) {
+//      console.error("Error finding cart by ID:", error);
+//      return null;
+//    }
+//  }
+//
+//  static async fetchCartDetails(): Promise<{
+//    products: Product[];
+//    totalPrice: number;
+//  }> {
+//    try {
+//      const carts = await Cart.findAll({ include: Product });
+//      const totalPrice = carts.reduce(
+//        (total, cart) => total + cart.qty * cart.Product.price,
+//        0
+//      );
+//      const products = carts.map((cart) => cart.Product);
+//      return { products, totalPrice };
+//    } catch (error) {
+//      console.error("Error fetching cart details:", error);
+//      return { products: [], totalPrice: 0 };
+//    }
+//  }
+//}
+//
