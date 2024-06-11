@@ -30,7 +30,7 @@ export const getProducts: RequestHandler = async (_req, res, _next) => {
 export const getProduct: RequestHandler = async (req, res, _next) => {
   try {
     const prodID = req.params.productID;
-    const product = await Product.findById(prodID);
+    const product = await Product.findByPk(prodID);
 
     if (product) {
       renderPage(res, "shop/product-details", {
@@ -101,7 +101,7 @@ export const getOrders: RequestHandler = (_req, res, _next) => {
 export const postCart: RequestHandler = async (req, res, _next) => {
   const prodId = req.body.productId;
   try {
-    const product = await Product.findById(prodId);
+    const product = await Product.findByPk(prodId);
     if (product && product.price !== undefined) {
       Cart.addProduct(prodId, product.price);
       res.redirect("/cart");
@@ -116,7 +116,7 @@ export const postCart: RequestHandler = async (req, res, _next) => {
 export const deleteFromCart: RequestHandler = async (req, res, _next) => {
   const prodId = req.body.productId;
   try {
-    const product = await Product.findById(prodId);
+    const product = await Product.findByPk(prodId);
     const cartProduct = await Cart.findById(prodId);
 
     if (product && cartProduct) {
