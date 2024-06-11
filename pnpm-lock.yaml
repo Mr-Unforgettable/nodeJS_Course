@@ -26,16 +26,10 @@ importers:
       sequelize:
         specifier: ^6.37.3
         version: 6.37.3(mysql2@3.10.0)
-      uuid:
-        specifier: ^10.0.0
-        version: 10.0.0
     devDependencies:
       '@types/node':
         specifier: ^20.14.2
         version: 20.14.2
-      '@types/uuid':
-        specifier: ^9.0.8
-        version: 9.0.8
       dotenv:
         specifier: ^16.4.5
         version: 16.4.5
@@ -115,9 +109,6 @@ packages:
 
   '@types/serve-static@1.15.7':
     resolution: {integrity: sha512-W8Ym+h8nhuRwaKPaDw34QUkwsGi6Rc4yYqvKFo5rm2FUEhCFbzVWrxXUxuKK8TASjWsysJY0nsmNCGhCOIsrOw==}
-
-  '@types/uuid@9.0.8':
-    resolution: {integrity: sha512-jg+97EGIcY9AGHJJRaaPVgetKDsrTgbRjQ5Msgjh/DQKEFl0DtyRr/VCOyD1T2R1MNeWPK/u7JoGhlDZnKBAfA==}
 
   '@types/validator@13.11.10':
     resolution: {integrity: sha512-e2PNXoXLr6Z+dbfx5zSh9TRlXJrELycxiaXznp4S5+D2M3b9bqJEitNHA5923jhnB2zzFiZHa2f0SI1HoIahpg==}
@@ -679,10 +670,6 @@ packages:
     resolution: {integrity: sha512-pMZTvIkT1d+TFGvDOqodOclx0QWkkgi6Tdoa8gC8ffGAAqz9pzPTZWAybbsHHoED/ztMtkv/VoYTYyShUn81hA==}
     engines: {node: '>= 0.4.0'}
 
-  uuid@10.0.0:
-    resolution: {integrity: sha512-8XkAphELsDnEGrDxUOHB3RGvXz6TeuYSGEZBOjtTtPm2lwhGBjLgOzLHB63IUWfBpNucQjND6d3AOudO+H3RWQ==}
-    hasBin: true
-
   uuid@8.3.2:
     resolution: {integrity: sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==}
     hasBin: true
@@ -779,8 +766,6 @@ snapshots:
       '@types/http-errors': 2.0.4
       '@types/node': 20.14.2
       '@types/send': 0.17.4
-
-  '@types/uuid@9.0.8': {}
 
   '@types/validator@13.11.10': {}
 
@@ -1333,8 +1318,6 @@ snapshots:
   unpipe@1.0.0: {}
 
   utils-merge@1.0.1: {}
-
-  uuid@10.0.0: {}
 
   uuid@8.3.2: {}
 
