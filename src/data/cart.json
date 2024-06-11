@@ -1,9 +1,4 @@
 {
-  "products": [
-    {
-      "id": "b6fc86b4-77df-4cab-a25c-c7705b7404df",
-      "qty": 3
-    }
-  ],
-  "totalPrice": 37.68
+  "products": [],
+  "totalPrice": 0
 }
