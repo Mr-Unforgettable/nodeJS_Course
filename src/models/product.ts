@@ -117,7 +117,7 @@
 // }
 //
 
-import { DataTypes, Model, Sequelize, UUIDV4 } from "sequelize";
+import { DataTypes, Model, UUIDV4 } from "sequelize";
 import { sequelize } from "../utils/database";
 
 export class Product extends Model {
