@@ -103,7 +103,7 @@ export const postCart: RequestHandler = async (req, res, _next) => {
   try {
     const product = await Product.findByPk(prodId);
     if (product && product.price !== undefined) {
-      Cart.addProduct(prodId, product.price);
+      Cart.addProduct(prodId);
       res.redirect("/cart");
     } else {
       res.status(404).json({ message: "Product not found" });
@@ -120,7 +120,7 @@ export const deleteFromCart: RequestHandler = async (req, res, _next) => {
     const cartProduct = await Cart.findById(prodId);
 
     if (product && cartProduct) {
-      await Cart.removeProduct(prodId, product.price);
+      await Cart.removeProduct(prodId);
       res.redirect("/cart");
     } else {
       res.status(404).send({ message: "Product not found" });
