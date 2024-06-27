@@ -1,5 +1,6 @@
 import { DataTypes, Model, UUIDV4 } from "sequelize";
 import { sequelize } from "../utils/database";
+import { User } from "./user";
 
 export class Product extends Model {
   public title!: string;
@@ -48,3 +49,6 @@ Product.init(
     tableName: "products",
   }
 );
+
+Product.belongsTo(User, { constraints: true, onDelete: "CASCADE" });
+User.hasMany(Product);
