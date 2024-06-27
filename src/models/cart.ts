@@ -1,13 +1,14 @@
-import { DataTypes, Model, Sequelize } from "sequelize";
+import { DataTypes, Model } from "sequelize";
 import { sequelize } from "../utils/database";
 import { Product } from "./product";
 
 export class Cart extends Model {
   public id!: string;
   public qty!: number;
-  public productId!: number;
-  //public Product!: Product;
   public Product!: any;
+  // public price!: number;
+  // public productId!: number;
+  // public Product!: Product;
 
   static async fetchAll(): Promise<Cart[]> {
     try {
@@ -81,17 +82,14 @@ export class Cart extends Model {
   }> {
     try {
       const carts = await Cart.findAll({
-        //include: { model: Product, as: "products" },
-        include: "products",
+        include: { model: Product, as: "products" },
+        // include: "products",
       });
-      console.log("carts details:", carts);
       const totalPrice = carts.reduce(
         (total, cart) => total + cart.qty * cart.Product.price,
         0
       );
-      console.log("totalPrice view:", totalPrice);
       const products = carts.map((cart) => cart.Product);
-      console.log("Product info:", products);
       return { products, totalPrice };
     } catch (error) {
       console.error("Error fetching cart details:", error);
@@ -113,6 +111,10 @@ Cart.init(
       type: DataTypes.INTEGER,
       allowNull: false,
     },
+    // price: {
+    //   type: DataTypes.DOUBLE,
+    //   allowNull: false,
+    // },
     productId: {
       type: DataTypes.INTEGER,
       allowNull: false,
