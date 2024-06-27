@@ -1,6 +1,7 @@
 import { RequestHandler } from "express";
 import { Product } from "../models/product";
 import { Cart } from "../models/cart";
+import { sequelize } from "../utils/database";
 
 const handleError = (res: any, error: any, message: string) => {
   console.error(message, error);
@@ -68,17 +69,28 @@ export const getCart: RequestHandler = async (_req, res, _next) => {
     const cartDetails: { productData: Product; qty: number }[] = [];
 
     for (const cartProduct of cartProducts) {
-      const productData = allProducts.find(prod => prod.id === cartProduct.id);
+      const productData = allProducts.find(
+        (prod) => prod.id === cartProduct.id
+      );
       if (productData) {
         cartDetails.push({ productData, qty: cartProduct.qty });
       }
     }
-
     renderPage(res, "shop/cart", {
       pageTitle: "🛒 Cart",
       path: "/cart",
-      prods: cartDetails
+      prods: cartDetails 
     });
+    //const { products, totalPrice } = await Cart.fetchCartDetails(); 
+    //renderPage(res, "shop/cart", {
+    //  pageTitle: "🛒 Cart",
+    //  path: "/cart",
+    //  prods: products.map(productData => ({
+    //    productData,
+    //    qty: 1
+    //  })),
+    //  totalPrice,
+    //});
   } catch (error) {
     handleError(res, error, "Error fetching the Cart items");
   }
@@ -99,11 +111,11 @@ export const getOrders: RequestHandler = (_req, res, _next) => {
 };
 
 export const postCart: RequestHandler = async (req, res, _next) => {
-  const prodId = req.body.productId;
+  const productId = req.body.productId;
   try {
-    const product = await Product.findByPk(prodId);
-    if (product && product.price !== undefined) {
-      Cart.addProduct(prodId);
+    const product = await Product.findByPk(productId);
+    if (product) {
+      await Cart.addProduct(productId);
       res.redirect("/cart");
     } else {
       res.status(404).json({ message: "Product not found" });
@@ -114,13 +126,13 @@ export const postCart: RequestHandler = async (req, res, _next) => {
 };
 
 export const deleteFromCart: RequestHandler = async (req, res, _next) => {
-  const prodId = req.body.productId;
+  const productId = req.body.productId;
   try {
-    const product = await Product.findByPk(prodId);
-    const cartProduct = await Cart.findById(prodId);
+    const product = await Product.findByPk(productId);
+    const cartProduct = await Cart.findOne({ where: { productId } });
 
     if (product && cartProduct) {
-      await Cart.removeProduct(prodId);
+      await Cart.removeProduct(productId);
       res.redirect("/cart");
     } else {
       res.status(404).send({ message: "Product not found" });

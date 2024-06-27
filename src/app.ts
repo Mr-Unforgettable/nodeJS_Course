@@ -24,12 +24,10 @@ app.use(shopRoutes);
 app.use(pageNotFound);
 
 // Models associations
-Product.belongsToMany(Cart, { through: 'Cart'});
-Cart.belongsToMany(Product, { through: 'Cart'});
 
 sequelize
-  .sync()
-  // .sync({ force: true })
+  // .sync()
+  .sync({ force: true })
   .then((result) => {
     // console.log(result);
     app.listen(PORT, () => {
