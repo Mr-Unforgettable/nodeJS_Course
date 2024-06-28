@@ -162,7 +162,6 @@ export const getEditProduct: RequestHandler = async (req, res, next) => {
   }
 
   const prodId = req.params.productID;
-  console.log(prodId);
   try {
     const product = await Product.findByPk(prodId);
     if (!product) {
@@ -202,12 +201,12 @@ export const postAddProduct: RequestHandler = async (req, res, next) => {
   }
 
   try {
-    await Product.create({
+    await req.user.createProduct({
       title: title,
       price: price,
       imageUrl: imageUrl,
-      description: description
-    });
+      description: description,
+    })
     res.redirect("/");
   } catch (error) {
     handleServerError(res, error);
