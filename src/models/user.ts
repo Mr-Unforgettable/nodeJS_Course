@@ -6,7 +6,6 @@ export class User extends Model {
   public name!: string;
   public email!: string;
 }
-
 User.init(
   {
     id: {

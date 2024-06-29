@@ -1,13 +1,12 @@
-import { DataTypes, Model, UUIDV4 } from "sequelize";
+import { DataTypes, Model } from "sequelize";
 import { sequelize } from "../utils/database";
-import { User } from "./user";
 
 export class Product extends Model {
   public title!: string;
   public imageUrl?: string;
   public description?: string;
   public price?: string;
-  public id!: string;
+  public id!: number;
 
   static async fetchAll(): Promise<Product[]> {
     try {
@@ -20,7 +19,6 @@ export class Product extends Model {
   }
 }
 
-// Define the model attributes
 Product.init(
   {
     id: {
@@ -50,5 +48,3 @@ Product.init(
   }
 );
 
-Product.belongsTo(User, { constraints: true, onDelete: "CASCADE" });
-User.hasMany(Product);

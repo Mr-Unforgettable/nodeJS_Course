@@ -1,7 +1,7 @@
 import { RequestHandler } from "express";
 import { Product } from "../models/product";
 import { Cart } from "../models/cart";
-import { sequelize } from "../utils/database";
+import { CartItem } from "../models/cart-item";
 
 const handleError = (res: any, error: any, message: string) => {
   console.error(message, error);
@@ -64,7 +64,7 @@ export const getIndex: RequestHandler = async (_req, res, _next) => {
 
 export const getCart: RequestHandler = async (_req, res, _next) => {
   try {
-    const cartProducts = await Cart.fetchAll();
+    const cartProducts = await CartItem.fetchAll();
     const allProducts = await Product.fetchAll();
     const cartDetails: { productData: Product; qty: number }[] = [];
 
@@ -73,7 +73,7 @@ export const getCart: RequestHandler = async (_req, res, _next) => {
         (prod) => prod.id === cartProduct.id
       );
       if (productData) {
-        cartDetails.push({ productData, qty: cartProduct.qty });
+        cartDetails.push({ productData, qty: cartProduct.quantity });
       }
     }
     renderPage(res, "shop/cart", {
@@ -115,7 +115,7 @@ export const postCart: RequestHandler = async (req, res, _next) => {
   try {
     const product = await Product.findByPk(productId);
     if (product) {
-      await Cart.addProduct(productId);
+      await CartItem.addProduct(productId);
       res.redirect("/cart");
     } else {
       res.status(404).json({ message: "Product not found" });
@@ -132,7 +132,7 @@ export const deleteFromCart: RequestHandler = async (req, res, _next) => {
     const cartProduct = await Cart.findOne({ where: { productId } });
 
     if (product && cartProduct) {
-      await Cart.removeProduct(productId);
+      await CartItem.removeProduct(productId);
       res.redirect("/cart");
     } else {
       res.status(404).send({ message: "Product not found" });
