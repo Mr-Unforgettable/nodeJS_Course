@@ -6,8 +6,7 @@ import shopRoutes from "./routes/shop";
 import pageNotFound from "./routes/404";
 
 import { sequelize } from "./utils/database";
-import { User } from "./models/user";
-import { Product } from "./models";
+import { User, Product, Cart } from "./models";
 
 const app = express();
 const PORT = 3000;
@@ -22,7 +21,7 @@ app.use(express.static(path.join(__dirname, "public")));
 // Middleware to find the user and attach to the request object
 app.use(async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const user = await User.findByPk(1, { include: Product});
+    const user = await User.findByPk(1, { include: Product });
     if (user) {
       console.log("User found:", user);
       req.user = user;
@@ -40,24 +39,55 @@ app.use("/admin", adminRoutes);
 app.use(shopRoutes);
 app.use(pageNotFound);
 
-(async () => {
-  try {
-    // await sequelize.sync({ force: true });  // Remove this line in production build.
-    await sequelize.sync();
+// (async () => {
+//   try {
+//     await sequelize.sync({ force: true }); // Remove this line in production build.
+//     // await sequelize.sync();
+// 
+//     let user = await User.findByPk(1);
+//     if (!user) {
+//       user = await User.create({
+//         name: "TestSubject1",
+//         email: "testsub1@email.test",
+//       });
+//     }
+// 
+//     console.log("User created:", user);
+// 
+//     let cart = await user.createCart();
+// 
+//     console.log("Cart created:", cart);
+// 
+//     app.listen(PORT, () => {
+//       console.log(`Server running at http://localhost:${PORT}`);
+//     });
+//   } catch (error) {
+//     console.error("Error during Sequalize sync or user creation:", error);
+//   }
+// })();
 
-    let user = await User.findByPk(1);
+sequelize
+  .sync({ force: true })
+  .then(() => {
+    return User.findByPk(1);
+  })
+  .then((user) => {
     if (!user) {
-      user = await User.create({
+      return User.create({
         name: "TestSubject1",
-        email: "testsub1@email.test",
+        email: "testsub1@test.test",
       });
     }
-    console.log("User created or found:", user);
-
+    return user;
+  })
+  .then((user: any) => {
+    return user.createCart();
+  })
+  .then((cart) => {
     app.listen(PORT, () => {
       console.log(`Server running at http://localhost:${PORT}`);
     });
-  } catch (error) {
-    console.error("Error during Sequalize sync or user creation:", error);
-  }
-})();
+  })
+  .catch((err) => {
+    console.log(err);
+  });
