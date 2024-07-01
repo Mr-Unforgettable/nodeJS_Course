@@ -6,19 +6,17 @@ import { User } from "./user";
 
 // Define associations
 Product.belongsTo(User, { constraints: true, onDelete: "CASCADE" });
+User.hasMany(Product);
+
 Cart.belongsToMany(Product, {
   through: CartItem,
-  foreignKey: "cartId",
-  as: "products",
 });
 Product.belongsToMany(Cart, {
   through: CartItem,
-  foreignKey: "productId",
-  as: "carts",
 });
-Cart.belongsTo(User);
-User.hasMany(Product);
+
 User.hasOne(Cart);
+Cart.belongsTo(User);
 
 // Export models
 export { sequelize, Cart, CartItem, Product, User };

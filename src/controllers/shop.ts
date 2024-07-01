@@ -62,35 +62,19 @@ export const getIndex: RequestHandler = async (_req, res, _next) => {
   }
 };
 
-export const getCart: RequestHandler = async (_req, res, _next) => {
+export const getCart: RequestHandler = async (req, res, _next) => {
   try {
-    const cartProducts = await CartItem.fetchAll();
-    const allProducts = await Product.fetchAll();
-    const cartDetails: { productData: Product; qty: number }[] = [];
+    const cart = await req.user.getCart();
+    console.log("Cart info:", cart);
 
-    for (const cartProduct of cartProducts) {
-      const productData = allProducts.find(
-        (prod) => prod.id === cartProduct.id
-      );
-      if (productData) {
-        cartDetails.push({ productData, qty: cartProduct.quantity });
-      }
+    const cartDetails = await cart.getProducts();
+    if (cartDetails) {
+      renderPage(res, "shop/cart", {
+        pageTitle: "🛒 Cart",
+        path: "/cart",
+        prods: cartDetails,
+      });
     }
-    renderPage(res, "shop/cart", {
-      pageTitle: "🛒 Cart",
-      path: "/cart",
-      prods: cartDetails 
-    });
-    //const { products, totalPrice } = await Cart.fetchCartDetails(); 
-    //renderPage(res, "shop/cart", {
-    //  pageTitle: "🛒 Cart",
-    //  path: "/cart",
-    //  prods: products.map(productData => ({
-    //    productData,
-    //    qty: 1
-    //  })),
-    //  totalPrice,
-    //});
   } catch (error) {
     handleError(res, error, "Error fetching the Cart items");
   }
@@ -113,15 +97,50 @@ export const getOrders: RequestHandler = (_req, res, _next) => {
 export const postCart: RequestHandler = async (req, res, _next) => {
   const productId = req.body.productId;
   try {
-    const product = await Product.findByPk(productId);
-    if (product) {
-      await CartItem.addProduct(productId);
-      res.redirect("/cart");
-    } else {
-      res.status(404).json({ message: "Product not found" });
+    const cart = await req.user.getCart(); // Assuming req.user.getCart() returns the user's cart
+    let product;
+    
+    // Check if the product already exists in the cart
+    const products = await cart.getProducts({ where: { id: productId } });
+    if (products.length > 0) {
+      product = products[0];
     }
+    
+    let newQuantity = 1;
+    
+    // If product already exists in cart, update its quantity
+    if (product) {
+      const updatedCartItem = await CartItem.findOne({
+        where: {
+          cartId: cart.id,
+          productId: productId
+        }
+      });
+
+      if (updatedCartItem) {
+        newQuantity = updatedCartItem.quantity + 1;
+        await updatedCartItem.update({ quantity: newQuantity });
+      } else {
+        await cart.addProduct(product, {
+          through: { quantity: newQuantity }
+        });
+      }
+    } else {
+      // If product does not exist in cart, add it
+      const specificProduct = await Product.findByPk(productId);
+      if (specificProduct) {
+        await cart.addProduct(specificProduct, {
+          through: { quantity: newQuantity }
+        });
+      } else {
+        return res.status(404).json({ message: "Product not found" });
+      }
+    }
+    
+    res.redirect("/cart"); // Redirect to cart page after successful addition/update
   } catch (error) {
-    handleError(res, error, "Error adding product to cart:");
+    console.error("Error updating the cart:", error);
+    res.status(500).json({ message: "Internal server error" }); // Handle error response
   }
 };
 

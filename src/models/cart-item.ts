@@ -81,7 +81,6 @@ export class CartItem extends Model {
     try {
       const carts = await CartItem.findAll({
         include: { model: Product, as: "products" },
-        // include: "products",
       });
       const totalPrice = carts.reduce(
         (
@@ -110,6 +109,14 @@ CartItem.init(
     quantity: {
       type: DataTypes.INTEGER,
     },
+    //productId: {
+    //  type: DataTypes.INTEGER,
+    //  allowNull: false,
+    //  references: {
+    //    model: Product,
+    //    key: "id",
+    //  },
+    //},
   },
   {
     sequelize,
