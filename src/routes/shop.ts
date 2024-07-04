@@ -5,9 +5,9 @@ import {
   getProducts,
   getProduct,
   getIndex,
-  getCheckout,
   postCart,
-  deleteFromCart
+  deleteFromCart,
+  postOrder
 } from "../controllers/shop";
 
 const router = Router();
@@ -24,11 +24,11 @@ router.get("/products/:productID", getProduct);
 // Cart route => GET
 router.get("/cart", getCart);
 
-// /checkout => GET
-router.get("/checkout", getCheckout);
-
 // /orders => GET
 router.get("/orders", getOrders);
+
+// /orders => POST
+router.post("/create-order", postOrder);
 
 // /cart => POST
 router.post("/cart", postCart);
