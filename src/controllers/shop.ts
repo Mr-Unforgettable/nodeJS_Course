@@ -1,6 +1,6 @@
 import { RequestHandler } from "express";
 import { Product } from "../models/product";
-import { Cart } from "../models/cart";
+import { CartItem } from "../models/cart-item";
 
 const handleError = (res: any, error: any, message: string) => {
   console.error(message, error);
@@ -61,66 +61,101 @@ export const getIndex: RequestHandler = async (_req, res, _next) => {
   }
 };
 
-export const getCart: RequestHandler = async (_req, res, _next) => {
+export const getCart: RequestHandler = async (req, res, _next) => {
   try {
-    const cartProducts = await Cart.fetchAll();
-    const allProducts = await Product.fetchAll();
-    const cartDetails: { productData: Product; qty: number }[] = [];
+    const cart = await req.user.getCart();
+    console.log("Cart info:", cart);
 
-    for (const cartProduct of cartProducts) {
-      const productData = allProducts.find(prod => prod.id === cartProduct.id);
-      if (productData) {
-        cartDetails.push({ productData, qty: cartProduct.qty });
-      }
+    const cartDetails = await cart.getProducts();
+    if (cartDetails) {
+      renderPage(res, "shop/cart", {
+        pageTitle: "🛒 Cart",
+        path: "/cart",
+        prods: cartDetails,
+      });
     }
-
-    renderPage(res, "shop/cart", {
-      pageTitle: "🛒 Cart",
-      path: "/cart",
-      prods: cartDetails
-    });
   } catch (error) {
     handleError(res, error, "Error fetching the Cart items");
   }
 };
 
-export const getCheckout: RequestHandler = (_req, res, _next) => {
-  renderPage(res, "shop/checkout", {
-    pageTitle: "ℹ️ Checkout",
-    path: "/checkout",
-  });
-};
+export const getOrders: RequestHandler = async (req, res, _next) => {
+  try {
+    const orders = await req.user.getOrders({ include: Product });
 
-export const getOrders: RequestHandler = (_req, res, _next) => {
-  renderPage(res, "shop/orders", {
-    pageTitle: "ℹ️ orders",
-    path: "/orders",
-  });
+    if (orders) {
+      console.log(orders);
+      renderPage(res, "shop/orders", {
+        pageTitle: "ℹ️ orders",
+        path: "/orders",
+        orders: orders,
+      });
+    } else {
+      res.status(404).send({ message: "Orders not found. " });
+    }
+  } catch (error) {
+    handleError(res, error, "Error fetching the order items");
+  }
 };
 
 export const postCart: RequestHandler = async (req, res, _next) => {
-  const prodId = req.body.productId;
+  const productId = req.body.productId;
   try {
-    const product = await Product.findByPk(prodId);
-    if (product && product.price !== undefined) {
-      Cart.addProduct(prodId, product.price);
-      res.redirect("/cart");
-    } else {
-      res.status(404).json({ message: "Product not found" });
+    const cart = await req.user.getCart(); // Assuming req.user.getCart() returns the user's cart
+    let product;
+
+    // Check if the product already exists in the cart
+    const products = await cart.getProducts({ where: { id: productId } });
+    if (products.length > 0) {
+      product = products[0];
     }
+
+    let newQuantity = 1;
+
+    // If product already exists in cart, update its quantity
+    if (product) {
+      const updatedCartItem = await CartItem.findOne({
+        where: {
+          cartId: cart.id,
+          productId: productId,
+        },
+      });
+
+      if (updatedCartItem) {
+        newQuantity = updatedCartItem.quantity + 1;
+        await updatedCartItem.update({ quantity: newQuantity });
+      } else {
+        await cart.addProduct(product, {
+          through: { quantity: newQuantity },
+        });
+      }
+    } else {
+      // If product does not exist in cart, add it
+      const specificProduct = await Product.findByPk(productId);
+      if (specificProduct) {
+        await cart.addProduct(specificProduct, {
+          through: { quantity: newQuantity },
+        });
+      } else {
+        return res.status(404).json({ message: "Product not found" });
+      }
+    }
+
+    res.redirect("/cart"); // Redirect to cart page after successful addition/update
   } catch (error) {
-    handleError(res, error, "Error adding product to cart:");
+    console.error("Error updating the cart:", error);
+    res.status(500).json({ message: "Internal server error" }); // Handle error response
   }
 };
 
 export const deleteFromCart: RequestHandler = async (req, res, _next) => {
-  const prodId = req.body.productId;
+  const productId = req.body.productId;
   try {
-    const product = await Product.findByPk(prodId);
-    const cartProduct = await Cart.findById(prodId);
+    const product = await Product.findByPk(productId);
+    const cartProduct = await CartItem.findOne({ where: { productId } });
 
     if (product && cartProduct) {
-      await Cart.removeProduct(prodId, product.price);
+      await CartItem.removeProduct(productId);
       res.redirect("/cart");
     } else {
       res.status(404).send({ message: "Product not found" });
@@ -128,4 +163,54 @@ export const deleteFromCart: RequestHandler = async (req, res, _next) => {
   } catch (error) {
     handleError(res, error, "Error deleting product from cart.");
   }
+
+  // try {
+  //   const cart = await req.user.getCart();
+
+  //   const products = await cart.getProducts({ where: { id: productId } });
+  //   if (products) {
+  //     const product = products[0];
+  //     const updatedCart = await product.CartItem.destroy();
+  //     res.redirect("/cart");
+  //     return updatedCart;
+  //   } else {
+  //     res.status(404).send({ message: "Product not found" });
+  //   }
+  // } catch (error) {
+  //   console.error("Error deleting the cart:", error);
+  //   res.status(500).json({ message: "Internal server error" });
+  // }
 };
+
+export const postOrder: RequestHandler = (req, res, _next) => {
+  const productId = req.body.productId;
+  let fetchedCart: any;
+
+  req.user
+    .getCart()
+    .then((cart: any) => {
+      fetchedCart = cart;
+      return cart.getProducts({ where: productId });
+    })
+    .then((products: any) => {
+      return req.user
+        .createOrder()
+        .then((order: any) => {
+          return order.addProduct(
+            products.map((product: any) => {
+              product.orderItem = { quantity: product.CartItem.quantity };
+              return product;
+            }),
+          );
+        })
+        .catch((err: any) => console.log(err));
+    })
+    .then(() => {
+      fetchedCart.setProducts(null);
+    })
+    .then(() => {
+      res.redirect("/orders");
+    })
+    .catch((err: any) => console.log(err));
+};
+

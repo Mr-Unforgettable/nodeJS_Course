@@ -1,4 +1,4 @@
-import express from "express";
+import express, { NextFunction, Request, Response } from "express";
 import path from "node:path";
 
 import adminRoutes from "./routes/admin";
@@ -6,6 +6,7 @@ import shopRoutes from "./routes/shop";
 import pageNotFound from "./routes/404";
 
 import { sequelize } from "./utils/database";
+import { User, Product } from "./models";
 
 const app = express();
 const PORT = 3000;
@@ -17,18 +18,77 @@ app.set("views", path.join(__dirname, "views"));
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, "public")));
 
+// Middleware to find the user and attach to the request object
+app.use(async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const user = await User.findByPk(1, { include: Product });
+    if (user) {
+      console.log("User found:", user);
+      req.user = user;
+    } else {
+      console.log("User not found");
+    }
+    next();
+  } catch (err) {
+    console.error("Unable to find the user", err);
+    next(err); // Ensure the middleware continues in case of error
+  }
+});
+
 app.use("/admin", adminRoutes);
 app.use(shopRoutes);
 app.use(pageNotFound);
 
+// (async () => {
+//   try {
+//     await sequelize.sync({ force: true }); // Remove this line in production build.
+//     // await sequelize.sync();
+// 
+//     let user = await User.findByPk(1);
+//     if (!user) {
+//       user = await User.create({
+//         name: "TestSubject1",
+//         email: "testsub1@email.test",
+//       });
+//     }
+// 
+//     console.log("User created:", user);
+// 
+//     let cart = await user.createCart();
+// 
+//     console.log("Cart created:", cart);
+// 
+//     app.listen(PORT, () => {
+//       console.log(`Server running at http://localhost:${PORT}`);
+//     });
+//   } catch (error) {
+//     console.error("Error during Sequalize sync or user creation:", error);
+//   }
+// })();
+
 sequelize
-  .sync()
-  .then((result: any) => {
-    console.log(result);
+  // .sync()
+  .sync({ force: true })
+  .then(() => {
+    return User.findByPk(1);
+  })
+  .then((user) => {
+    if (!user) {
+      return User.create({
+        name: "TestSubject1",
+        email: "testsub1@test.test",
+      });
+    }
+    return user;
+  })
+  .then((user: any) => {
+    return user.createCart();
+  })
+  .then((cart) => {
     app.listen(PORT, () => {
-      console.log(`Server running at http://localhost:${PORT}/`);
+      console.log(`Server running at http://localhost:${PORT}`);
     });
   })
-  .catch((error: any) => {
-    console.log(error);
+  .catch((err) => {
+    console.log(err);
   });
