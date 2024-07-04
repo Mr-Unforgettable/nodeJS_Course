@@ -23,12 +23,12 @@ app.use(pageNotFound);
 
 sequelize
   .sync()
-  .then((result) => {
+  .then((result: any) => {
     console.log(result);
     app.listen(PORT, () => {
       console.log(`Server running at http://localhost:${PORT}/`);
     });
   })
-  .catch((error) => {
+  .catch((error: any) => {
     console.log(error);
   });
