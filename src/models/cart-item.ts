@@ -1,12 +1,10 @@
 import { DataTypes, Model } from "sequelize";
 import { sequelize } from "../utils/database";
-import { Product } from "./product";
 import { Cart } from "./cart";
 
 export class CartItem extends Model {
   public id!: number;
   public quantity!: number;
-  public Product!: any;
 
   static async fetchAll(): Promise<CartItem[]> {
     try {
@@ -26,7 +24,7 @@ export class CartItem extends Model {
         cart.quantity += 1;
         await cart.save();
       } else {
-        await Cart.create({ productId, quantity: 1 });
+        await CartItem.create({ productId, quantity: 1 });
       }
     } catch (error) {
       console.error("Error adding product to cart:", error);
@@ -41,7 +39,7 @@ export class CartItem extends Model {
           cart.quantity -= 1;
           await cart.save();
         } else {
-          await Cart.destroy({ where: { productId } });
+          await CartItem.destroy({ where: { productId } });
         }
       }
 
@@ -73,29 +71,6 @@ export class CartItem extends Model {
       return null;
     }
   }
-
-  static async fetchCartDetails(): Promise<{
-    products: Product[];
-    totalPrice: number;
-  }> {
-    try {
-      const carts = await CartItem.findAll({
-        include: { model: Product, as: "products" },
-      });
-      const totalPrice = carts.reduce(
-        (
-          total: number,
-          cart: { quantity: number; Product: { price: number } }
-        ) => total + cart.quantity * cart.Product.price,
-        0
-      );
-      const products = carts.map((cart: { Product: any }) => cart.Product);
-      return { products, totalPrice };
-    } catch (error) {
-      console.error("Error fetching cart details:", error);
-      return { products: [], totalPrice: 0 };
-    }
-  }
 }
 
 CartItem.init(
@@ -109,14 +84,6 @@ CartItem.init(
     quantity: {
       type: DataTypes.INTEGER,
     },
-    //productId: {
-    //  type: DataTypes.INTEGER,
-    //  allowNull: false,
-    //  references: {
-    //    model: Product,
-    //    key: "id",
-    //  },
-    //},
   },
   {
     sequelize,
