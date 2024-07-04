@@ -1,11 +1,11 @@
 import express from "express";
 import path from "node:path";
 
-import adminRoutes from "./routes/admin";
-import shopRoutes from "./routes/shop";
-import pageNotFound from "./routes/404";
+import { database } from "./utils/database";
 
-import { sequelize } from "./utils/database";
+// import adminRoutes from "./routes/admin";
+//import shopRoutes from "./routes/shop";
+//import pageNotFound from "./routes/404";
 
 const app = express();
 const PORT = 3000;
@@ -17,18 +17,12 @@ app.set("views", path.join(__dirname, "views"));
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, "public")));
 
-app.use("/admin", adminRoutes);
-app.use(shopRoutes);
-app.use(pageNotFound);
+// app.use("/admin", adminRoutes);
+//app.use(shopRoutes);
+//app.use(pageNotFound);
 
-sequelize
-  .sync()
-  .then((result) => {
-    console.log(result);
-    app.listen(PORT, () => {
-      console.log(`Server running at http://localhost:${PORT}/`);
-    });
-  })
-  .catch((error) => {
-    console.log(error);
+database(() => {
+  app.listen(PORT, () => {
+    console.log(`Server running at http://localhost:${PORT}/`);
   });
+});
