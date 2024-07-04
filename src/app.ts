@@ -6,7 +6,7 @@ import shopRoutes from "./routes/shop";
 import pageNotFound from "./routes/404";
 
 import { sequelize } from "./utils/database";
-import { User, Product, Cart } from "./models";
+import { User, Product } from "./models";
 
 const app = express();
 const PORT = 3000;
@@ -67,6 +67,7 @@ app.use(pageNotFound);
 // })();
 
 sequelize
+  // .sync()
   .sync({ force: true })
   .then(() => {
     return User.findByPk(1);
