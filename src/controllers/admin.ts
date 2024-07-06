@@ -45,69 +45,69 @@ export const postAddProduct: RequestHandler = async (req, res, _next) => {
   }
 };
 
-//export const getEditProduct: RequestHandler = async (req, res, _next) => {
-//  const editMode = req.query.edit === "true";
-//  if (!editMode) {
-//    return res.redirect("/");
-//  }
-//
-//  const prodId = req.params.productID;
-//  try {
-//    const product = await Product.findById(prodId);
-//    if (!product) {
-//      return res.redirect("/");
-//    }
-//    renderProductForm(
-//      res,
-//      "📝 Edit Product",
-//      "/admin/edit-product",
-//      true,
-//      product
-//    );
-//  } catch (error) {
-//    handleServerError(res, error);
-//  }
-//};
-//
-//export const postEditProduct: RequestHandler = async (req, res, _next) => {
-//  const {
-//    productId: prodId,
-//    title: updatedTitle,
-//    price: updatedPrice,
-//    imageUrl: updatedImageUrl,
-//    description: updatedDescription,
-//  } = req.body;
-//
-//  try {
-//    const updatedProduct = new Product(
-//      updatedTitle,
-//      updatedImageUrl,
-//      updatedDescription,
-//      updatedPrice,
-//      prodId
-//    );
-//
-//    await updatedProduct.save();
-//    res.redirect("/admin/products");
-//  } catch (error) {
-//    handleServerError(res, error);
-//  }
-//};
-//
-//export const getAdminProducts: RequestHandler = async (_req, res, _next) => {
-//  try {
-//    const adminProducts = await Product.fetchAll();
-//    res.render("admin/products", {
-//      pageTitle: "🛡️ Admin Products",
-//      editing: false,
-//      prods: adminProducts,
-//      path: "/admin/products",
-//    });
-//  } catch (error) {
-//    handleServerError(res, error);
-//  }
-//};
-//
+export const getEditProduct: RequestHandler = async (req, res, _next) => {
+  const editMode = req.query.edit === "true";
+  if (!editMode) {
+    return res.redirect("/");
+  }
+
+  const productId = req.params.productID;
+  try {
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res.redirect("/");
+    }
+    renderProductForm(
+      res,
+      "📝 Edit Product",
+      "/admin/edit-product",
+      true,
+      product
+    );
+  } catch (error) {
+    handleServerError(res, error);
+  }
+};
+
+// export const postEditProduct: RequestHandler = async (req, res, _next) => {
+//   const {
+//     productId: prodId,
+//     title: updatedTitle,
+//     price: updatedPrice,
+//     imageUrl: updatedImageUrl,
+//     description: updatedDescription,
+//   } = req.body;
+// 
+//   try {
+//     const updatedProduct = new Product(
+//       updatedTitle,
+//       updatedImageUrl,
+//       updatedDescription,
+//       updatedPrice,
+//       prodId
+//     );
+// 
+//     await updatedProduct.save();
+//     res.redirect("/admin/products");
+//   } catch (error) {
+//     handleServerError(res, error);
+//   }
+// };
+
+export const getAdminProducts: RequestHandler = async (_req, res, _next) => {
+  try {
+    const adminProducts = await Product.fetchAll();
+    res.render("admin/products", {
+      pageTitle: "🛡️ Admin Products",
+      editing: false,
+      prods: adminProducts,
+      path: "/admin/products",
+    });
+  } catch (error) {
+    handleServerError(res, error);
+  }
+};
+
 //export const postDeleteProduct: RequestHandler = async (req, res, _next) => {
 //  const prodId = req.body.productId;
 //  try {
