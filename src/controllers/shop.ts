@@ -19,7 +19,6 @@ export const getIndex: RequestHandler = async (_req, res, _next) => {
       prods: products,
       pageTitle: "🛍️ Shop",
       path: "/",
-      // hasProducts: products.length > 0,
     });
   } catch (error) {
     handleError(res, error, "Error fetching the Product Index:");
@@ -35,31 +34,30 @@ export const getProducts: RequestHandler = async (_req, res, _next) => {
       pageTitle: "🛍️ All Products",
       path: "/products",
       editing: false,
-      // hasProducts: products.length > 0,
     });
   } catch (error) {
     handleError(res, error, "Error fetching products:");
   }
 };
 
-// export const getProduct: RequestHandler = async (req, res, _next) => {
-//   try {
-//     const prodID = req.params.productID;
-//     const product = await Product.findByPk(prodID);
-// 
-//     if (product) {
-//       renderPage(res, "shop/product-details", {
-//         product: product,
-//         pageTitle: `ℹ️ ${product.title} `,
-//         path: "product-details",
-//       });
-//     } else {
-//       res.status(404).json({ message: "Product not found" });
-//     }
-//   } catch (error) {
-//     handleError(res, error, "Error fetching products:");
-//   }
-// };
+export const getProduct: RequestHandler = async (req, res, _next) => {
+  try {
+    const productID = req.params.productID;
+    const product = await Product.findById(productID);
+
+    if (product) {
+      renderPage(res, "shop/product-details", {
+        product: product,
+        pageTitle: `ℹ️ ${product.title} `,
+        path: "product-details",
+      });
+    } else {
+      res.status(404).json({ message: "Product not found" });
+    }
+  } catch (error) {
+    handleError(res, error, "Error fetching products:");
+  }
+};
 
 // export const getCart: RequestHandler = async (_req, res, _next) => {
 //   try {
