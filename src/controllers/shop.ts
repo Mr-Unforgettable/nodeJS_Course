@@ -97,13 +97,6 @@ export const getProduct: RequestHandler = async (req, res, _next) => {
 //   }
 // };
 // 
-// export const getCheckout: RequestHandler = (_req, res, _next) => {
-//   renderPage(res, "shop/checkout", {
-//     pageTitle: "ℹ️ Checkout",
-//     path: "/checkout",
-//   });
-// };
-// 
 // export const getOrders: RequestHandler = (_req, res, _next) => {
 //   renderPage(res, "shop/orders", {
 //     pageTitle: "ℹ️ orders",
