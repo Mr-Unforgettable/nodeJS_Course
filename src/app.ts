@@ -4,8 +4,8 @@ import path from "node:path";
 import { closeDB, connectDB } from "./utils/database";
 
 import adminRoutes from "./routes/admin";
-//import shopRoutes from "./routes/shop";
-//import pageNotFound from "./routes/404";
+import shopRoutes from "./routes/shop";
+import pageNotFound from "./routes/404";
 
 const app = express();
 const PORT = 3000;
@@ -18,8 +18,8 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, "public")));
 
 app.use("/admin", adminRoutes);
-//app.use(shopRoutes);
-//app.use(pageNotFound);
+app.use(shopRoutes);
+app.use(pageNotFound);
 
 connectDB(() => {
   app.listen(PORT, () => {
