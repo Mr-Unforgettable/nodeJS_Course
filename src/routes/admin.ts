@@ -2,6 +2,8 @@ import { Router } from "express";
 import {
   getAddProduct,
   postAddProduct,
+  getAdminProducts,
+  getEditProduct,
 } from "../controllers/admin";
 
 const router = Router();
@@ -12,10 +14,10 @@ router.get("/add-product", getAddProduct);
 router.post("/add-product", postAddProduct);
 
 // /admin/products => GET
-//router.get("/products", getAdminProducts);
+router.get("/products", getAdminProducts);
 
 // /edit-product/:productId => GET
-//router.get("/edit-product/:productID", getEditProduct);
+router.get("/edit-product/:productID", getEditProduct);
 
 // /edit-product => POST
 //router.post("/edit-product", postEditProduct);
