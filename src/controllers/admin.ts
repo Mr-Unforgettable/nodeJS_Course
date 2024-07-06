@@ -1,5 +1,6 @@
 import { RequestHandler } from "express";
 import { Product } from "../models/product";
+import { ObjectId }  from "mongodb";
 
 const renderProductForm = (
   res: any,
@@ -69,30 +70,32 @@ export const getEditProduct: RequestHandler = async (req, res, _next) => {
   }
 };
 
-// export const postEditProduct: RequestHandler = async (req, res, _next) => {
-//   const {
-//     productId: prodId,
-//     title: updatedTitle,
-//     price: updatedPrice,
-//     imageUrl: updatedImageUrl,
-//     description: updatedDescription,
-//   } = req.body;
-// 
-//   try {
-//     const updatedProduct = new Product(
-//       updatedTitle,
-//       updatedImageUrl,
-//       updatedDescription,
-//       updatedPrice,
-//       prodId
-//     );
-// 
-//     await updatedProduct.save();
-//     res.redirect("/admin/products");
-//   } catch (error) {
-//     handleServerError(res, error);
-//   }
-// };
+export const postEditProduct: RequestHandler = async (req, res, _next) => {
+  const {
+    productId: productId,
+    title: updatedTitle,
+    price: updatedPrice,
+    imageUrl: updatedImageUrl,
+    description: updatedDescription,
+  } = req.body;
+
+  const objId = ObjectId.createFromHexString(productId);
+  try {
+    const updatedProduct = new Product(
+      updatedTitle,
+      updatedImageUrl,
+      updatedDescription,
+      updatedPrice,
+      objId
+    );
+
+    // Here it will save and run the update query.
+    await updatedProduct.save();
+    res.redirect("/admin/products");
+  } catch (error) {
+    handleServerError(res, error);
+  }
+};
 
 export const getAdminProducts: RequestHandler = async (_req, res, _next) => {
   try {
@@ -108,18 +111,17 @@ export const getAdminProducts: RequestHandler = async (_req, res, _next) => {
   }
 };
 
-//export const postDeleteProduct: RequestHandler = async (req, res, _next) => {
-//  const prodId = req.body.productId;
-//  try {
-//    const product = await Product.findById(prodId);
-//    console.log("Product Index:", product);
-//    if (product) {
-//      await Product.deleteById(prodId);
-//      res.redirect("/");
-//    } else {
-//      res.status(404).json({ message: "Product not found" });
-//    }
-//  } catch (error) {
-//    handleServerError(res, error);
-//  }
-//};
+export const postDeleteProduct: RequestHandler = async (req, res, _next) => {
+  const productId = req.body.productId;
+  try {
+    const product = await Product.findById(productId);
+    if (product) {
+      await Product.deleteById(productId);
+      res.redirect("/");
+    } else {
+      res.status(404).json({ message: "Product not found" });
+    }
+  } catch (error) {
+    handleServerError(res, error);
+  }
+};
