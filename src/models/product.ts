@@ -7,9 +7,13 @@ export class Product {
     public imageUrl: string,
     public description: string,
     public price: number,
-    public _id?: ( ObjectId | null ),
+    public _id?: ObjectId | null,
     public userId?: ObjectId,
-  ) {}
+  ) {
+    if (_id === undefined) {
+      this._id = null;
+    }
+  }
 
   async save() {
     const db = getDB();
