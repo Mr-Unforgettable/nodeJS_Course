@@ -51,7 +51,7 @@ export const closeDB = async() => {
   try {
     if (_client) {
       await _client.close();
-      console.log("\nMongoDB connection closed.");
+      console.log(" MongoDB connection closed.");
       _db = null;
       _client = null;
     }
