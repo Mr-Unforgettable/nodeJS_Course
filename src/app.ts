@@ -19,11 +19,11 @@ app.set("views", path.join(__dirname, "views"));
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, "public")));
 
-app.use( async (req, res, next) => {
+app.use(async (req, res, next) => {
   try {
-    const user = await User.findById('668bb17b65d7f8ef6b383611');
+    const user = await User.findById("668bb17b65d7f8ef6b383611");
     if (user) {
-      req.user = user;
+      req.user = new User(user.name, user.email, user.cart, user._id);
       next();
     }
   } catch (error) {
@@ -42,22 +42,22 @@ connectDB(() => {
   });
 });
 
-process.on('SIGINT', async () => {
+process.on("SIGINT", async () => {
   try {
     await closeDB();
     process.exit(0);
   } catch (error) {
-    console.error('Error closing MongoDB connection:', error);
+    console.error("Error closing MongoDB connection:", error);
     process.exit(1);
   }
 });
 
-process.on('SIGTERM', async () => {
+process.on("SIGTERM", async () => {
   try {
     await closeDB();
     process.exit(0);
   } catch (error) {
-    console.error('Error closing MongoDB connection:', error);
+    console.error("Error closing MongoDB connection:", error);
     process.exit(1);
   }
 });
