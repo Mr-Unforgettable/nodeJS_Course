@@ -38,6 +38,7 @@ export const connectDB = async(callback?: any) => {
   }
 };
 
+// Create the getDB function to reuse the connection from the connection pool.
 export const getDB = () => {
   if (_db) {
     return _db;
@@ -45,11 +46,12 @@ export const getDB = () => {
   throw "No database found!";
 };
 
+// closeDB will asynchronoulsy close all the client from the pool.
 export const closeDB = async() => {
   try {
     if (_client) {
       await _client.close();
-      console.log("MongoDB connection closed.");
+      console.log("\nMongoDB connection closed.");
       _db = null;
       _client = null;
     }
