@@ -7,6 +7,8 @@ import adminRoutes from "./routes/admin";
 import shopRoutes from "./routes/shop";
 import pageNotFound from "./routes/404";
 
+import { User } from "./models/user";
+
 const app = express();
 const PORT = 3000;
 
@@ -16,6 +18,19 @@ app.set("views", path.join(__dirname, "views"));
 
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, "public")));
+
+app.use( async (req, res, next) => {
+  try {
+    const user = await User.findById('668bb17b65d7f8ef6b383611');
+    if (user) {
+      req.user = user;
+      next();
+    }
+  } catch (error) {
+    console.error(`failed to create user: ${error}`);
+    next(error);
+  }
+});
 
 app.use("/admin", adminRoutes);
 app.use(shopRoutes);
