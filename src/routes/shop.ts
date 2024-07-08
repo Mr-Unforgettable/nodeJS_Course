@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getIndex, getProducts, getProduct } from "../controllers/shop";
+import { getIndex, getProducts, getProduct, postCart } from "../controllers/shop";
 
 const router = Router();
 
@@ -16,7 +16,7 @@ router.get("/products/:productID", getProduct);
 // router.get("/cart", getCart);
 
 // /cart => POST
-// router.post("/cart", postCart);
+router.post("/cart", postCart);
 
 // /orders => GET
 // router.get("/orders", getOrders);
