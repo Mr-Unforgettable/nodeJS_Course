@@ -7,7 +7,7 @@ export class Product {
     public imageUrl: string,
     public description: string,
     public price: number,
-    public _id?: any 
+    public _id?: ObjectId 
   ) {}
 
   async save() {
