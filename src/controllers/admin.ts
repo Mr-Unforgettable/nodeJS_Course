@@ -1,6 +1,5 @@
 import { RequestHandler } from "express";
 import { Product } from "../models/product";
-import { ObjectId }  from "mongodb";
 
 const renderProductForm = (
   res: any,
@@ -79,14 +78,13 @@ export const postEditProduct: RequestHandler = async (req, res, _next) => {
     description: updatedDescription,
   } = req.body;
 
-  const objId = ObjectId.createFromHexString(productId);
   try {
     const updatedProduct = new Product(
       updatedTitle,
       updatedImageUrl,
       updatedDescription,
       updatedPrice,
-      objId
+      productId 
     );
 
     // Here it will save and run the update query.
