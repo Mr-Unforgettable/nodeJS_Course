@@ -1,6 +1,6 @@
 import { RequestHandler } from "express";
 import { Product } from "../models/product";
-// import { Cart } from "../models/cart";
+import { User } from "../models/user";
 
 const handleError = (res: any, error: any, message: string) => {
   console.error(message, error);
@@ -81,22 +81,24 @@ export const getProduct: RequestHandler = async (req, res, _next) => {
 //     handleError(res, error, "Error fetching the Cart items");
 //   }
 // };
-// 
-// export const postCart: RequestHandler = async (req, res, _next) => {
-//   const prodId = req.body.productId;
-//   try {
-//     const product = await Product.findByPk(prodId);
-//     if (product && product.price !== undefined) {
-//       Cart.addProduct(prodId, product.price);
-//       res.redirect("/cart");
-//     } else {
-//       res.status(404).json({ message: "Product not found" });
-//     }
-//   } catch (error) {
-//     handleError(res, error, "Error adding product to cart:");
-//   }
-// };
-// 
+ 
+export const postCart: RequestHandler = async (req, res, _next) => {
+  const productId = req.body.productId;
+  try {
+    const product = await Product.findById(productId);
+    if (product) {
+      const cart = await req.user.addToCart(product);
+      res.redirect("/cart");
+      console.log()
+      return cart;
+    } else {
+      res.status(404).json({ message: "Product not found" });
+    }
+  } catch (error) {
+    handleError(res, error, "Error adding product to cart:");
+  }
+};
+ 
 // export const getOrders: RequestHandler = (_req, res, _next) => {
 //   renderPage(res, "shop/orders", {
 //     pageTitle: "ℹ️ orders",
