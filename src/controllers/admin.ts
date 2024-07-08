@@ -37,7 +37,14 @@ export const postAddProduct: RequestHandler = async (req, res, _next) => {
   }
 
   try {
-    const product = new Product(title, imageUrl, description, price);
+    const product = new Product(
+      title,
+      imageUrl,
+      description,
+      price,
+      null,
+      req.user._id
+    );
     await product.save();
     res.redirect("/");
   } catch (error) {
@@ -84,7 +91,7 @@ export const postEditProduct: RequestHandler = async (req, res, _next) => {
       updatedImageUrl,
       updatedDescription,
       updatedPrice,
-      productId 
+      productId
     );
 
     // Here it will save and run the update query.
