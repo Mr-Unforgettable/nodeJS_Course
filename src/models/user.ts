@@ -72,7 +72,7 @@ export class User {
     }
   }
 
-  async getCart(): Promise<any> {
+  async getCart() {
     const db = getDB();
     try {
       const productIDs = this.cart.items.map((item: any) => {
@@ -96,6 +96,27 @@ export class User {
       }
     } catch (error) {
       console.error(`Cart not found: ${error}`);
+      throw error;
+    }
+  }
+
+  async deleteCart(productId: string) {
+    const db = getDB();
+
+    try {
+      const updateCartItem = this.cart.items.filter((item: any) => {
+        return item.productId.toString() !== productId.toString();
+      });
+
+      const updateCart = await db.collection("users").updateOne(
+        {
+          _id: new ObjectId(this._id),
+        },
+        { $set: { cart: { items: updateCartItem } } }
+      );
+      return updateCart;
+    } catch (error) {
+      console.error(`failed to delete product from cart: ${error}`);
       throw error;
     }
   }
