@@ -59,29 +59,22 @@ export const getProduct: RequestHandler = async (req, res, _next) => {
   }
 };
 
-// export const getCart: RequestHandler = async (_req, res, _next) => {
-//   try {
-//     const cartProducts = await Cart.fetchAll();
-//     const allProducts = await Product.fetchAll();
-//     const cartDetails: { productData: Product; qty: number }[] = [];
-// 
-//     for (const cartProduct of cartProducts) {
-//       const productData = allProducts.find(prod => prod.id === cartProduct.id);
-//       if (productData) {
-//         cartDetails.push({ productData, qty: cartProduct.qty });
-//       }
-//     }
-// 
-//     renderPage(res, "shop/cart", {
-//       pageTitle: "🛒 Cart",
-//       path: "/cart",
-//       prods: cartDetails
-//     });
-//   } catch (error) {
-//     handleError(res, error, "Error fetching the Cart items");
-//   }
-// };
- 
+export const getCart: RequestHandler = async (req, res, _next) => {
+  try {
+    const cart = await req.user.getCart();
+    console.log(cart);
+    if (cart) {
+      renderPage(res, "shop/cart", {
+        pageTitle: "🛒 Cart",
+        path: "/cart",
+        prods: cart,
+      });
+    }
+  } catch (error) {
+    handleError(res, error, "Error fetching the Cart items");
+  }
+};
+
 export const postCart: RequestHandler = async (req, res, _next) => {
   const productId = req.body.productId;
   try {
@@ -89,7 +82,7 @@ export const postCart: RequestHandler = async (req, res, _next) => {
     if (product) {
       const cart = await req.user.addToCart(product);
       res.redirect("/cart");
-      console.log()
+      console.log();
       return cart;
     } else {
       res.status(404).json({ message: "Product not found" });
@@ -98,20 +91,20 @@ export const postCart: RequestHandler = async (req, res, _next) => {
     handleError(res, error, "Error adding product to cart:");
   }
 };
- 
+
 // export const getOrders: RequestHandler = (_req, res, _next) => {
 //   renderPage(res, "shop/orders", {
 //     pageTitle: "ℹ️ orders",
 //     path: "/orders",
 //   });
 // };
-// 
+//
 // export const deleteFromCart: RequestHandler = async (req, res, _next) => {
 //   const prodId = req.body.productId;
 //   try {
 //     const product = await Product.findByPk(prodId);
 //     const cartProduct = await Cart.findById(prodId);
-// 
+//
 //     if (product && cartProduct) {
 //       await Cart.removeProduct(prodId, product.price);
 //       res.redirect("/cart");
