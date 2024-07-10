@@ -92,26 +92,25 @@ export const postCart: RequestHandler = async (req, res, _next) => {
   }
 };
 
-// export const getOrders: RequestHandler = (_req, res, _next) => {
-//   renderPage(res, "shop/orders", {
-//     pageTitle: "ℹ️ orders",
-//     path: "/orders",
-//   });
-// };
-//
-// export const deleteFromCart: RequestHandler = async (req, res, _next) => {
-//   const prodId = req.body.productId;
-//   try {
-//     const product = await Product.findByPk(prodId);
-//     const cartProduct = await Cart.findById(prodId);
-//
-//     if (product && cartProduct) {
-//       await Cart.removeProduct(prodId, product.price);
-//       res.redirect("/cart");
-//     } else {
-//       res.status(404).send({ message: "Product not found" });
-//     }
-//   } catch (error) {
-//     handleError(res, error, "Error deleting product from cart.");
-//   }
-// };
+export const deleteFromCart: RequestHandler = async (req, res, _next) => {
+  const productId = req.body.productId;
+  try {
+    const cart = await req.user.deleteCart(productId);
+    if (cart) {
+      res.redirect("/cart");
+    } else {
+      res.status(404).send({ message: "Product not found" });
+    }
+  } catch (error) {
+    handleError(res, error, "Error deleting product from cart.");
+  }
+};
+
+export const getOrders: RequestHandler = (_req, res, _next) => {
+  renderPage(res, "shop/orders", {
+    pageTitle: "ℹ️ orders",
+    path: "/orders",
+  });
+};
+
+
