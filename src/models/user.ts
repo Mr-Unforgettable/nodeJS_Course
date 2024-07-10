@@ -38,8 +38,11 @@ export class User {
       let newQuantity = 1;
       const updatedCartItem = [...this.cart.items];
 
+      // Check if the cart contains the items
       if (cartProductIndex >= 0) {
+        // Update the quantity
         newQuantity = this.cart.items[cartProductIndex].quantity + 1;
+        // Put the new updated quantity
         updatedCartItem[cartProductIndex].quantity = newQuantity;
       } else {
         // Passing the product reference along with a new overrided property
@@ -50,9 +53,12 @@ export class User {
         });
       }
 
+      // Put the new update cart array
       const updatedCart = {
         items: updatedCartItem,
       };
+
+      // Running the update query
       const updateCart = await db.collection("users").updateOne(
         {
           _id: new ObjectId(this._id),
@@ -62,6 +68,34 @@ export class User {
       return updateCart;
     } catch (error) {
       console.error(`failed to add product to cart: ${error}`);
+      throw error;
+    }
+  }
+
+  async getCart(): Promise<any> {
+    const db = getDB();
+    try {
+      const productIDs = this.cart.items.map((item: any) => {
+        return item.productId;
+      });
+
+      const products = await db
+        .collection("products")
+        .find({ _id: { $in: productIDs } })
+        .toArray();
+
+      if (products) {
+        return products.map((product: any) => {
+          return {
+            ...product,
+            quantity: this.cart.items.find((iter: any) => {
+              return iter.productId.toString() === product._id.toString();
+            }).quantity,
+          };
+        });
+      }
+    } catch (error) {
+      console.error(`Cart not found: ${error}`);
       throw error;
     }
   }
