@@ -6,7 +6,8 @@ import {
   getCart,
   postCart,
   deleteFromCart,
-  getOrders
+  getOrders,
+  postOrders
 } from "../controllers/shop";
 
 const router = Router();
@@ -31,5 +32,8 @@ router.post("/cart-delete-item", deleteFromCart);
 
 // /orders => GET
 router.get("/orders", getOrders);
+
+// /orders => POST
+router.post("/create-order", postOrders);
 
 export default router;
