@@ -11,7 +11,7 @@ const renderPage = (res: any, view: string, options: any) => {
   res.render(view, options);
 };
 
-export const getIndex: RequestHandler = async (_req, res, _next) => {
+export const getIndex: RequestHandler = async (req, res, next) => {
   try {
     // Fetching the Products list using fetchAll method.
     const products = await Product.fetchAll();
@@ -25,7 +25,7 @@ export const getIndex: RequestHandler = async (_req, res, _next) => {
   }
 };
 
-export const getProducts: RequestHandler = async (_req, res, _next) => {
+export const getProducts: RequestHandler = async (req, res, next) => {
   try {
     // Fetching the Products list using fetchAll method.
     const products = await Product.fetchAll();
@@ -40,7 +40,7 @@ export const getProducts: RequestHandler = async (_req, res, _next) => {
   }
 };
 
-export const getProduct: RequestHandler = async (req, res, _next) => {
+export const getProduct: RequestHandler = async (req, res, next) => {
   try {
     const productID = req.params.productID;
     const product = await Product.findById(productID);
@@ -59,7 +59,7 @@ export const getProduct: RequestHandler = async (req, res, _next) => {
   }
 };
 
-export const getCart: RequestHandler = async (req, res, _next) => {
+export const getCart: RequestHandler = async (req, res, next) => {
   try {
     const cart = await req.user.getCart();
     console.log(cart);
@@ -75,7 +75,7 @@ export const getCart: RequestHandler = async (req, res, _next) => {
   }
 };
 
-export const postCart: RequestHandler = async (req, res, _next) => {
+export const postCart: RequestHandler = async (req, res, next) => {
   const productId = req.body.productId;
   try {
     const product = await Product.findById(productId);
@@ -92,7 +92,7 @@ export const postCart: RequestHandler = async (req, res, _next) => {
   }
 };
 
-export const deleteFromCart: RequestHandler = async (req, res, _next) => {
+export const deleteFromCart: RequestHandler = async (req, res, next) => {
   const productId = req.body.productId;
   try {
     const cart = await req.user.deleteCart(productId);
@@ -106,11 +106,31 @@ export const deleteFromCart: RequestHandler = async (req, res, _next) => {
   }
 };
 
-export const getOrders: RequestHandler = (_req, res, _next) => {
-  renderPage(res, "shop/orders", {
-    pageTitle: "ℹ️ orders",
-    path: "/orders",
-  });
+export const getOrders: RequestHandler = async (req, res, next) => {
+  try {
+    const orders = await User.getOrders(req.user._id);
+    console.log(orders);
+    if (orders) {
+      renderPage(res, "shop/orders", {
+        pageTitle: "ℹ️ orders",
+        path: "/orders",
+        orders: orders,
+      });
+    }
+  } catch (error) {
+    handleError(res, error, "Error fetching orders");
+  }
 };
 
-
+export const postOrders: RequestHandler = async (req, res, next) => {
+  try {
+    const orders = await req.user.addOrder();
+    if (orders) {
+      res.redirect("/orders");
+    } else {
+      res.status(404).send({ message: "Order not found" });
+    }
+  } catch (error) {
+    handleError(res, error, "Error posting order to the page.");
+  }
+};
