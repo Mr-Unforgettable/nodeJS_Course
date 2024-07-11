@@ -85,21 +85,10 @@ export const postCart: RequestHandler = async (req, res, next) => {
       console.log();
       return cart;
     } else {
-      // If product does not exist in cart, add it
-      const specificProduct = await Product.findByPk(productId);
-      if (specificProduct) {
-        await cart.addProduct(specificProduct, {
-          through: { quantity: newQuantity },
-        });
-      } else {
-        return res.status(404).json({ message: "Product not found" });
-      }
+      res.status(404).json({ message: "Product not found" });
     }
-
-    res.redirect("/cart"); // Redirect to cart page after successful addition/update
   } catch (error) {
-    console.error("Error updating the cart:", error);
-    res.status(500).json({ message: "Internal server error" }); // Handle error response
+    handleError(res, error, "Error adding product to cart:");
   }
 };
 
