@@ -1,12 +1,13 @@
 import express, { NextFunction, Request, Response } from "express";
 import path from "node:path";
 
+import { closeDB, connectDB } from "./utils/database";
+
 import adminRoutes from "./routes/admin";
 import shopRoutes from "./routes/shop";
 import pageNotFound from "./routes/404";
 
-import { sequelize } from "./utils/database";
-import { User, Product } from "./models";
+import { User } from "./models/user";
 
 const app = express();
 const PORT = 3000;
@@ -18,20 +19,16 @@ app.set("views", path.join(__dirname, "views"));
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, "public")));
 
-// Middleware to find the user and attach to the request object
-app.use(async (req: Request, res: Response, next: NextFunction) => {
+app.use(async (req, res, next) => {
   try {
-    const user = await User.findByPk(1, { include: Product });
+    const user = await User.findById("668bb17b65d7f8ef6b383611");
     if (user) {
-      console.log("User found:", user);
-      req.user = user;
-    } else {
-      console.log("User not found");
+      req.user = new User(user.name, user.email, user.cart, user._id);
+      next();
     }
-    next();
-  } catch (err) {
-    console.error("Unable to find the user", err);
-    next(err); // Ensure the middleware continues in case of error
+  } catch (error) {
+    console.error(`failed to create user: ${error}`);
+    next(error);
   }
 });
 
@@ -39,56 +36,28 @@ app.use("/admin", adminRoutes);
 app.use(shopRoutes);
 app.use(pageNotFound);
 
-// (async () => {
-//   try {
-//     await sequelize.sync({ force: true }); // Remove this line in production build.
-//     // await sequelize.sync();
-// 
-//     let user = await User.findByPk(1);
-//     if (!user) {
-//       user = await User.create({
-//         name: "TestSubject1",
-//         email: "testsub1@email.test",
-//       });
-//     }
-// 
-//     console.log("User created:", user);
-// 
-//     let cart = await user.createCart();
-// 
-//     console.log("Cart created:", cart);
-// 
-//     app.listen(PORT, () => {
-//       console.log(`Server running at http://localhost:${PORT}`);
-//     });
-//   } catch (error) {
-//     console.error("Error during Sequalize sync or user creation:", error);
-//   }
-// })();
-
-sequelize
-  // .sync()
-  .sync({ force: true })
-  .then(() => {
-    return User.findByPk(1);
-  })
-  .then((user) => {
-    if (!user) {
-      return User.create({
-        name: "TestSubject1",
-        email: "testsub1@test.test",
-      });
-    }
-    return user;
-  })
-  .then((user: any) => {
-    return user.createCart();
-  })
-  .then((cart) => {
-    app.listen(PORT, () => {
-      console.log(`Server running at http://localhost:${PORT}`);
-    });
-  })
-  .catch((err) => {
-    console.log(err);
+connectDB(() => {
+  app.listen(PORT, () => {
+    console.log(`Server running at http://localhost:${PORT}/`);
   });
+});
+
+process.on("SIGINT", async () => {
+  try {
+    await closeDB();
+    process.exit(0);
+  } catch (error) {
+    console.error("Error closing MongoDB connection:", error);
+    process.exit(1);
+  }
+});
+
+process.on("SIGTERM", async () => {
+  try {
+    await closeDB();
+    process.exit(0);
+  } catch (error) {
+    console.error("Error closing MongoDB connection:", error);
+    process.exit(1);
+  }
+});

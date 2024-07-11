@@ -29,15 +29,38 @@ export const getAddProduct: RequestHandler = (_req, res, _next) => {
   renderProductForm(res, "➕ Add Product", "/admin/add-product", false);
 };
 
-export const getEditProduct: RequestHandler = async (req, res, next) => {
+export const postAddProduct: RequestHandler = async (req, res, _next) => {
+  const { title, imageUrl, price, description } = req.body;
+
+  if (!title || !imageUrl || !price || !description) {
+    return res.status(400).send("Missing required fields");
+  }
+
+  try {
+    const product = new Product(
+      title,
+      imageUrl,
+      description,
+      price,
+      null,
+      req.user._id
+    );
+    await product.save();
+    res.redirect("/");
+  } catch (error) {
+    handleServerError(res, error);
+  }
+};
+
+export const getEditProduct: RequestHandler = async (req, res, _next) => {
   const editMode = req.query.edit === "true";
   if (!editMode) {
     return res.redirect("/");
   }
 
-  const prodId = req.params.productID;
+  const productId = req.params.productID;
   try {
-    const product = await Product.findByPk(prodId);
+    const product = await Product.findById(productId);
     if (!product) {
       return res.redirect("/");
     }
@@ -53,9 +76,35 @@ export const getEditProduct: RequestHandler = async (req, res, next) => {
   }
 };
 
-export const getAdminProducts: RequestHandler = async (req, res, next) => {
+export const postEditProduct: RequestHandler = async (req, res, _next) => {
+  const {
+    productId: productId,
+    title: updatedTitle,
+    price: updatedPrice,
+    imageUrl: updatedImageUrl,
+    description: updatedDescription,
+  } = req.body;
+
   try {
-    const adminProducts = await Product.findAll();
+    const updatedProduct = new Product(
+      updatedTitle,
+      updatedImageUrl,
+      updatedDescription,
+      updatedPrice,
+      productId
+    );
+
+    // Here it will save and run the update query.
+    await updatedProduct.save();
+    res.redirect("/admin/products");
+  } catch (error) {
+    handleServerError(res, error);
+  }
+};
+
+export const getAdminProducts: RequestHandler = async (_req, res, _next) => {
+  try {
+    const adminProducts = await Product.fetchAll();
     res.render("admin/products", {
       pageTitle: "🛡️ Admin Products",
       editing: false,
@@ -67,62 +116,17 @@ export const getAdminProducts: RequestHandler = async (req, res, next) => {
   }
 };
 
-export const postAddProduct: RequestHandler = async (req, res, next) => {
-  const { title, imageUrl, price, description } = req.body;
-
-  if (!title || !imageUrl || !price || !description) {
-    return res.status(400).send("Missing required fields.");
-  }
-
+export const postDeleteProduct: RequestHandler = async (req, res, _next) => {
+  const productId = req.body.productId;
   try {
-    await req.user.createProduct({
-      title: title,
-      price: price,
-      imageUrl: imageUrl,
-      description: description,
-    })
-    res.redirect("/");
-  } catch (error) {
-    handleServerError(res, error);
-  }
-}
-
-export const postEditProduct: RequestHandler = async (req, res, next) => {
-  const {
-    productId: prodId,
-    title: updatedTitle,
-    price: updatePrice,
-    imageUrl: updatedImageUrl,
-    description: updatedDescription,
-  } = req.body;
-
-  try {
-    const product = await Product.findByPk(prodId);
-    if (!product) {
-      return res.status(404).json({ message: "Product not found "});
+    const product = await Product.findById(productId);
+    if (product) {
+      await Product.deleteById(productId);
+      res.redirect("/");
+    } else {
+      res.status(404).json({ message: "Product not found" });
     }
-
-    product.title = updatedTitle;
-    product.price = updatePrice;
-    product.imageUrl = updatedImageUrl;
-    product.description = updatedDescription;
-    await product.save();
-    res.redirect("/admin/products");
   } catch (error) {
     handleServerError(res, error);
   }
-}
-
-export const postDeleteProduct: RequestHandler = async (req, res, next) => {
-  const prodId = req.body.productId;
-  try {
-    const product = await Product.findByPk(prodId);
-    if (!product) {
-      return res.status(404).json({ message: "Product not found." });
-    }
-    await product.destroy();
-    res.redirect("/");
-  } catch (error) {
-    handleServerError(res, error);
-  }
-}
+};

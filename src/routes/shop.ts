@@ -1,13 +1,13 @@
 import { Router } from "express";
 import {
-  getCart,
-  getOrders,
+  getIndex,
   getProducts,
   getProduct,
-  getIndex,
+  getCart,
   postCart,
   deleteFromCart,
-  postOrder
+  getOrders,
+  postOrders
 } from "../controllers/shop";
 
 const router = Router();
@@ -24,16 +24,16 @@ router.get("/products/:productID", getProduct);
 // Cart route => GET
 router.get("/cart", getCart);
 
-// /orders => GET
-router.get("/orders", getOrders);
-
-// /orders => POST
-router.post("/create-order", postOrder);
-
 // /cart => POST
 router.post("/cart", postCart);
 
 // /cart => POST
 router.post("/cart-delete-item", deleteFromCart);
+
+// /orders => GET
+router.get("/orders", getOrders);
+
+// /orders => POST
+router.post("/create-order", postOrders);
 
 export default router;
