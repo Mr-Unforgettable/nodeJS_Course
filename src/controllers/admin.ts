@@ -6,7 +6,7 @@ const renderProductForm = (
   pageTitle: string,
   path: string,
   editing: boolean,
-  product?: Product
+  product?: any
 ) => {
   res.render("admin/edit-product", {
     pageTitle,
@@ -37,16 +37,28 @@ export const postAddProduct: RequestHandler = async (req, res, _next) => {
   }
 
   try {
-    const product = new Product(
-      title,
-      imageUrl,
-      description,
-      price,
-      null,
-      req.user._id
-    );
+    const product = new Product({
+      title: title,
+      imageUrl: imageUrl,
+      description: description,
+      price: price,
+    });
     await product.save();
     res.redirect("/");
+  } catch (error) {
+    handleServerError(res, error);
+  }
+};
+
+export const getAdminProducts: RequestHandler = async (_req, res, _next) => {
+  try {
+    const adminProducts = await Product.find();
+    res.render("admin/products", {
+      pageTitle: "🛡️ Admin Products",
+      editing: false,
+      prods: adminProducts,
+      path: "/admin/products",
+    });
   } catch (error) {
     handleServerError(res, error);
   }
@@ -86,31 +98,16 @@ export const postEditProduct: RequestHandler = async (req, res, _next) => {
   } = req.body;
 
   try {
-    const updatedProduct = new Product(
-      updatedTitle,
-      updatedImageUrl,
-      updatedDescription,
-      updatedPrice,
-      productId
-    );
+    const product = await Product.findById(productId);
 
-    // Here it will save and run the update query.
-    await updatedProduct.save();
+    if (product) {
+      product.title = updatedTitle;
+      product.price = updatedPrice;
+      product.imageUrl = updatedImageUrl;
+      product.description = updatedDescription;
+      await product.save();
+    }
     res.redirect("/admin/products");
-  } catch (error) {
-    handleServerError(res, error);
-  }
-};
-
-export const getAdminProducts: RequestHandler = async (_req, res, _next) => {
-  try {
-    const adminProducts = await Product.fetchAll();
-    res.render("admin/products", {
-      pageTitle: "🛡️ Admin Products",
-      editing: false,
-      prods: adminProducts,
-      path: "/admin/products",
-    });
   } catch (error) {
     handleServerError(res, error);
   }
@@ -121,7 +118,7 @@ export const postDeleteProduct: RequestHandler = async (req, res, _next) => {
   try {
     const product = await Product.findById(productId);
     if (product) {
-      await Product.deleteById(productId);
+      await Product.findByIdAndDelete(productId);
       res.redirect("/");
     } else {
       res.status(404).json({ message: "Product not found" });
