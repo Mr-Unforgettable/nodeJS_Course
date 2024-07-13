@@ -1,5 +1,6 @@
 import { RequestHandler } from "express";
 import { Product } from "../models/product";
+import { Order } from "../models/order";
 
 const handleError = (res: any, error: any, message: string) => {
   console.error(message, error);
@@ -59,79 +60,99 @@ export const getProduct: RequestHandler = async (req, res, next) => {
   }
 };
 
-// export const getCart: RequestHandler = async (req, res, next) => {
-//   try {
-//     const cart = await req.user.getCart();
-//     console.log(cart);
-//     if (cart) {
-//       renderPage(res, "shop/cart", {
-//         pageTitle: "🛒 Cart",
-//         path: "/cart",
-//         prods: cart,
-//       });
-//     }
-//   } catch (error) {
-//     handleError(res, error, "Error fetching the Cart items");
-//   }
-// };
-// 
-// export const postCart: RequestHandler = async (req, res, next) => {
-//   const productId = req.body.productId;
-//   try {
-//     const product = await Product.findById(productId);
-//     if (product) {
-//       const cart = await req.user.addToCart(product);
-//       res.redirect("/cart");
-//       console.log();
-//       return cart;
-//     } else {
-//       res.status(404).json({ message: "Product not found" });
-//     }
-//   } catch (error) {
-//     handleError(res, error, "Error adding product to cart:");
-//   }
-// };
-// 
-// export const deleteFromCart: RequestHandler = async (req, res, next) => {
-//   const productId = req.body.productId;
-//   try {
-//     const cart = await req.user.deleteCart(productId);
-//     if (cart) {
-//       res.redirect("/cart");
-//     } else {
-//       res.status(404).send({ message: "Product not found" });
-//     }
-//   } catch (error) {
-//     handleError(res, error, "Error deleting product from cart.");
-//   }
-// };
-// 
-// export const getOrders: RequestHandler = async (req, res, next) => {
-//   try {
-//     const orders = await User.getOrders(req.user._id);
-//     console.log(orders);
-//     if (orders) {
-//       renderPage(res, "shop/orders", {
-//         pageTitle: "ℹ️ orders",
-//         path: "/orders",
-//         orders: orders,
-//       });
-//     }
-//   } catch (error) {
-//     handleError(res, error, "Error fetching orders");
-//   }
-// };
-// 
-// export const postOrders: RequestHandler = async (req, res, next) => {
-//   try {
-//     const orders = await req.user.addOrder();
-//     if (orders) {
-//       res.redirect("/orders");
-//     } else {
-//       res.status(404).send({ message: "Order not found" });
-//     }
-//   } catch (error) {
-//     handleError(res, error, "Error posting order to the page.");
-//   }
-// };
-// 
+export const getCart: RequestHandler = async (req, res, next) => {
+  try {
+    const user = req.user;
+    await user.populate("cart.items.productId");
+    console.log(user.cart.items);
+    if (user) {
+      const products = user.cart.items;
+      renderPage(res, "shop/cart", {
+        pageTitle: "🛒 Cart",
+        path: "/cart",
+        cart: products,
+      });
+    }
+  } catch (error) {
+    handleError(res, error, "Error fetching the Cart items");
+  }
+};
+
+export const postCart: RequestHandler = async (req, res, next) => {
+  const productId = req.body.productId;
+  try {
+    const product = await Product.findById(productId);
+    if (product) {
+      const cart = await req.user.addToCart(product);
+      res.redirect("/cart");
+      return cart;
+    } else {
+      res.status(404).json({ message: "Product not found" });
+    }
+  } catch (error) {
+    handleError(res, error, "Error adding product to cart:");
+  }
+};
+
+export const deleteFromCart: RequestHandler = async (req, res, next) => {
+  const productId = req.body.productId;
+  console.log("Product to be deleted:", productId)
+  try {
+    const cart = await req.user.deleteCart(productId);
+    if (cart) {
+      res.redirect("/cart");
+    } else {
+      res.status(404).send({ message: "Product not found" });
+    }
+  } catch (error) {
+    handleError(res, error, "Error deleting product from cart.");
+  }
+};
+
+export const getOrders: RequestHandler = async (req, res, next) => {
+  try {
+    const orders = await Order.find({ "user.userId": req.user._id });
+    console.log(orders);
+    if (orders) {
+      renderPage(res, "shop/orders", {
+        pageTitle: "ℹ️ orders",
+        path: "/orders",
+        orders: orders,
+      });
+    }
+  } catch (error) {
+    handleError(res, error, "Error fetching orders");
+  }
+};
+
+export const postOrders: RequestHandler = async (req, res, next) => {
+  try {
+    const user = req.user;
+    await user.populate("cart.items.productId");
+    console.log(user.cart.items);
+
+    const products = user.cart.items.map((item: any) => {
+      return {
+        quantity: item.quantity,
+        product: {
+          ...item.productId.toObject(),
+        },
+      };
+    });
+
+    const order = new Order({
+      user: {
+        name: user.name,
+        userId: user._id,
+      },
+      products: products,
+    });
+
+    await order.save();
+    await req.user.clearCart();
+
+    res.redirect("/orders");
+  } catch (error) {
+    handleError(res, error, "Error posting order to the page.");
+  }
+};
