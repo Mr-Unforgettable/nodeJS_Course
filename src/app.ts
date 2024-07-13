@@ -7,7 +7,7 @@ import adminRoutes from "./routes/admin";
 import shopRoutes from "./routes/shop";
 import pageNotFound from "./routes/404";
 
-// import { User } from "./models/user";
+import { User } from "./models/user";
 
 dotenv.config();
 
@@ -22,18 +22,18 @@ app.set("views", path.join(__dirname, "views"));
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, "public")));
 
-// app.use(async (req, res, next) => {
-//   try {
-//     const user = await User.findById("668bb17b65d7f8ef6b383611");
-//     if (user) {
-//       req.user = new User(user.name, user.email, user.cart, user._id);
-//       next();
-//     }
-//   } catch (error) {
-//     console.error(`failed to create user: ${error}`);
-//     next(error);
-//   }
-// });
+app.use(async (req, res, next) => {
+  try {
+    const user = await User.findById("6690e25c129cb3961870bdc4");
+    if (user) {
+      req.user = user;
+      next();
+    }
+  } catch (error) {
+    console.log(`Internal Server Error: ${error}`);
+    throw error;
+  }
+});
 
 app.use("/admin", adminRoutes);
 app.use(shopRoutes);
@@ -41,6 +41,19 @@ app.use(pageNotFound);
 
 async function main() {
   await mongoose.connect(uri);
+
+  const testUser = await User.findOne();
+  if (!testUser) {
+    const user = new User({
+      name: "TestUser1",
+      email: "testuser1@test.url",
+      cart: {
+        items: [],
+      },
+    });
+
+    await user.save();
+  }
 
   app.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}/`);
