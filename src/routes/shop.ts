@@ -1,13 +1,13 @@
 import { Router } from "express";
 import {
-  getIndex,
-  getProducts,
-  getProduct,
-  getCart,
-  postCart,
-  deleteFromCart,
-  getOrders,
-  postOrders
+getIndex,
+getProducts,
+getProduct,
+getCart,
+postCart,
+deleteFromCart,
+getOrders,
+postOrders
 } from "../controllers/shop";
 
 const router = Router();
