@@ -5,7 +5,7 @@ import {
   getAdminProducts,
   getEditProduct,
   postEditProduct,
-  postDeleteProduct
+  postDeleteProduct,
 } from "../controllers/admin";
 
 const router = Router();
