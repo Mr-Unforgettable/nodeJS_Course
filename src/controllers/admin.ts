@@ -6,7 +6,7 @@ const renderProductForm = (
   pageTitle: string,
   path: string,
   editing: boolean,
-  product?: any, 
+  product?: any
 ) => {
   res.render("admin/edit-product", {
     pageTitle,
@@ -42,7 +42,7 @@ export const postAddProduct: RequestHandler = async (req, res, _next) => {
       imageUrl: imageUrl,
       description: description,
       price: price,
-      userId: req.user
+      userId: req.user,
     });
     await product.save();
     res.redirect("/");
