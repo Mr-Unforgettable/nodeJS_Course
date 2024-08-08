@@ -22,7 +22,7 @@ app.set("views", path.join(__dirname, "views"));
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, "public")));
 
-app.use(async (req, res, next) => {
+app.use(async (req, _res, next) => {
   try {
     const user = await User.findById("6690e25c129cb3961870bdc4");
     if (user) {
