@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 
 import adminRoutes from "./routes/admin";
 import shopRoutes from "./routes/shop";
+import authRoutes from "./routes/auth";
 import pageNotFound from "./routes/404";
 
 import { User } from "./models/user";
@@ -37,6 +38,7 @@ app.use(async (req, _res, next) => {
 
 app.use("/admin", adminRoutes);
 app.use(shopRoutes);
+app.use(authRoutes);
 app.use(pageNotFound);
 
 async function main() {
