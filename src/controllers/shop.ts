@@ -11,13 +11,14 @@ const renderPage = (res: any, view: string, options: any) => {
   res.render(view, options);
 };
 
-export const getIndex: RequestHandler = async (req, res, next) => {
+export const getIndex: RequestHandler = async (req, res, _next) => {
   try {
     // Fetching the Products list using fetchAll method.
     const products = await Product.find();
     renderPage(res, "shop/index", {
       prods: products,
       pageTitle: "🛍️ Shop",
+      isAuthenticated: req.session.isLoggedIn,
       path: "/",
     });
   } catch (error) {
@@ -25,7 +26,7 @@ export const getIndex: RequestHandler = async (req, res, next) => {
   }
 };
 
-export const getProducts: RequestHandler = async (req, res, next) => {
+export const getProducts: RequestHandler = async (req, res, _next) => {
   try {
     // Fetching the Products list using fetchAll method.
     const products = await Product.find();
@@ -33,6 +34,7 @@ export const getProducts: RequestHandler = async (req, res, next) => {
     renderPage(res, "shop/product-list", {
       prods: products,
       pageTitle: "🛍️ All Products",
+      isAuthenticated: req.session.isLoggedIn,
       path: "/products",
       editing: false,
     });
@@ -41,7 +43,7 @@ export const getProducts: RequestHandler = async (req, res, next) => {
   }
 };
 
-export const getProduct: RequestHandler = async (req, res, next) => {
+export const getProduct: RequestHandler = async (req, res, _next) => {
   const productID = req.params.productID;
   try {
     const product = await Product.findById(productID);
@@ -50,6 +52,7 @@ export const getProduct: RequestHandler = async (req, res, next) => {
       renderPage(res, "shop/product-details", {
         product: product,
         pageTitle: `ℹ️ ${product.title} `,
+        isAuthenticated: req.session.isLoggedIn,
         path: "product-details",
       });
     } else {
@@ -60,7 +63,7 @@ export const getProduct: RequestHandler = async (req, res, next) => {
   }
 };
 
-export const getCart: RequestHandler = async (req, res, next) => {
+export const getCart: RequestHandler = async (req, res, _next) => {
   try {
     const user = req.user;
     await user.populate("cart.items.productId");
@@ -70,6 +73,7 @@ export const getCart: RequestHandler = async (req, res, next) => {
       renderPage(res, "shop/cart", {
         pageTitle: "🛒 Cart",
         path: "/cart",
+        isAuthenticated: req.session.isLoggedIn,
         cart: products,
       });
     }
@@ -78,7 +82,7 @@ export const getCart: RequestHandler = async (req, res, next) => {
   }
 };
 
-export const postCart: RequestHandler = async (req, res, next) => {
+export const postCart: RequestHandler = async (req, res, _next) => {
   const productId = req.body.productId;
   try {
     const product = await Product.findById(productId);
@@ -94,9 +98,9 @@ export const postCart: RequestHandler = async (req, res, next) => {
   }
 };
 
-export const deleteFromCart: RequestHandler = async (req, res, next) => {
+export const deleteFromCart: RequestHandler = async (req, res, _next) => {
   const productId = req.body.productId;
-  console.log("Product to be deleted:", productId)
+  console.log("Product to be deleted:", productId);
   try {
     const cart = await req.user.deleteCart(productId);
     if (cart) {
@@ -109,7 +113,7 @@ export const deleteFromCart: RequestHandler = async (req, res, next) => {
   }
 };
 
-export const getOrders: RequestHandler = async (req, res, next) => {
+export const getOrders: RequestHandler = async (req, res, _next) => {
   try {
     const orders = await Order.find({ "user.userId": req.user._id });
     console.log(orders);
@@ -117,6 +121,7 @@ export const getOrders: RequestHandler = async (req, res, next) => {
       renderPage(res, "shop/orders", {
         pageTitle: "ℹ️ orders",
         path: "/orders",
+        isAuthenticated: req.session.isLoggedIn,
         orders: orders,
       });
     }
@@ -125,7 +130,7 @@ export const getOrders: RequestHandler = async (req, res, next) => {
   }
 };
 
-export const postOrders: RequestHandler = async (req, res, next) => {
+export const postOrders: RequestHandler = async (req, res, _next) => {
   try {
     const user = req.user;
     await user.populate("cart.items.productId");
