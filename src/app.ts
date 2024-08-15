@@ -3,6 +3,7 @@ import path from "node:path";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import session from "express-session";
+import { default as connectMongoDBSession } from "connect-mongodb-session";
 
 import adminRoutes from "./routes/admin";
 import shopRoutes from "./routes/shop";
@@ -17,6 +18,13 @@ const app = express();
 const uri = process.env.URI!;
 const PORT = 3000;
 
+const MongoDBStore = connectMongoDBSession(session);
+
+var store = new MongoDBStore({
+  uri: uri,
+  collection: 'sessions',
+});
+
 // EJS
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
@@ -28,6 +36,7 @@ app.use(
     secret: process.env.SESSION_TOKEN!,
     resave: false,
     saveUninitialized: false,
+    store: store,
   })
 );
 
