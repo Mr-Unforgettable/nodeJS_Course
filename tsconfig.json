@@ -108,5 +108,5 @@
   },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules"],
-  "files": ["src/types/types.d.ts"]
+  "files": ["src/types/express.d.ts", "src/types/session.d.ts"]
 }
