@@ -6,12 +6,14 @@ const renderProductForm = (
   pageTitle: string,
   path: string,
   editing: boolean,
-  product?: any
+  isAuthenticated: boolean,
+  product?: any,
 ) => {
   res.render("admin/edit-product", {
     pageTitle,
     path,
     editing,
+    isAuthenticated,
     product,
   });
 };
@@ -26,7 +28,7 @@ const handleServerError = (
 };
 
 export const getAddProduct: RequestHandler = (_req, res, _next) => {
-  renderProductForm(res, "➕ Add Product", "/admin/add-product", false);
+  renderProductForm(res, "➕ Add Product", "/admin/add-product", false, true);
 };
 
 export const postAddProduct: RequestHandler = async (req, res, _next) => {
@@ -51,7 +53,7 @@ export const postAddProduct: RequestHandler = async (req, res, _next) => {
   }
 };
 
-export const getAdminProducts: RequestHandler = async (_req, res, _next) => {
+export const getAdminProducts: RequestHandler = async (req, res, _next) => {
   try {
     const adminProducts = await Product.find();
     res.render("admin/products", {
@@ -59,6 +61,7 @@ export const getAdminProducts: RequestHandler = async (_req, res, _next) => {
       editing: false,
       prods: adminProducts,
       path: "/admin/products",
+      isAuthenticated: req.session.isLoggedIn,
     });
   } catch (error) {
     handleServerError(res, error);
@@ -81,6 +84,7 @@ export const getEditProduct: RequestHandler = async (req, res, _next) => {
       res,
       "📝 Edit Product",
       "/admin/edit-product",
+      true,
       true,
       product
     );
