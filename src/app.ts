@@ -2,6 +2,7 @@ import express, { NextFunction, Request, Response } from "express";
 import path from "node:path";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
+import session from "express-session";
 
 import adminRoutes from "./routes/admin";
 import shopRoutes from "./routes/shop";
@@ -22,6 +23,13 @@ app.set("views", path.join(__dirname, "views"));
 
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, "public")));
+app.use(
+  session({
+    secret: process.env.SESSION_TOKEN!,
+    resave: false,
+    saveUninitialized: false,
+  })
+);
 
 app.use(async (req, _res, next) => {
   try {
