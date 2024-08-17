@@ -22,7 +22,7 @@ const MongoDBStore = connectMongoDBSession(session);
 
 var store = new MongoDBStore({
   uri: uri,
-  collection: 'sessions',
+  collection: "sessions",
 });
 
 // EJS
@@ -40,17 +40,12 @@ app.use(
   })
 );
 
-app.use(async (req, _res, next) => {
-  try {
-    const user = await User.findById("6690e25c129cb3961870bdc4");
-    if (user) {
-      req.user = user;
-      next();
-    }
-  } catch (error) {
-    console.log(`Internal Server Error: ${error}`);
-    throw error;
+app.use(async (req, res, next) => {
+  const user = await User.findById(req.session.user._id);
+  if (user) {
+    req.user = user;
   }
+  next(); 
 });
 
 app.use("/admin", adminRoutes);
