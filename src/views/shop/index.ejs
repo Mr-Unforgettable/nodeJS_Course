@@ -16,7 +16,8 @@
                                     </h1>
                                 </header>
                                 <div class="card__image">
-                                    <img src="<%= product.imageUrl %>" alt="<%= product.title %>" width="400" height="350" />
+                                    <img src="<%= product.imageUrl %>" alt="<%= product.title %>" width="400"
+                                        height="350" />
                                 </div>
                                 <div class="card__content">
                                     <h2 class="product__price">$<%= product.price %>
@@ -26,7 +27,9 @@
                                     </p>
                                 </div>
                                 <div class="card__actions">
-                                    <%- include('../includes/add-to-cart.ejs', {product: product}) %>
+                                    <% if (isAuthenticated) { %>
+                                        <%- include('../includes/add-to-cart.ejs', {product: product}) %>
+                                            <% } %>
                                 </div>
                             </article>
                             <% } %>
