@@ -67,7 +67,10 @@ export const getCart: RequestHandler = async (req, res, _next) => {
   try {
     const user = req.user;
     await user.populate("cart.items.productId");
+
+    // Logging for testing
     console.log(user.cart.items);
+
     if (user) {
       const products = user.cart.items;
       renderPage(res, "shop/cart", {
