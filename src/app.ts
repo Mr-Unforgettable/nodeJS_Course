@@ -41,11 +41,15 @@ app.use(
 );
 
 app.use(async (req, res, next) => {
+  if (!req.session.user) {
+    return next();
+  }
+
   const user = await User.findById(req.session.user._id);
   if (user) {
     req.user = user;
   }
-  next(); 
+  next();
 });
 
 app.use("/admin", adminRoutes);
