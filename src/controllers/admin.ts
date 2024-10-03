@@ -31,11 +31,12 @@ export const getAddProduct: RequestHandler = (_req, res, _next) => {
   renderProductForm(res, "➕ Add Product", "/admin/add-product", false, true);
 };
 
-export const postAddProduct: RequestHandler = async (req, res, _next) => {
+export const postAddProduct: RequestHandler = async (req, res) => {
   const { title, imageUrl, price, description } = req.body;
 
   if (!title || !imageUrl || !price || !description) {
-    return res.status(400).send("Missing required fields");
+    res.status(400).send("Missing required fields");
+    return;
   }
 
   try {
