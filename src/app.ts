@@ -40,7 +40,7 @@ app.use(
   })
 );
 
-app.use(async (req, res, next) => {
+app.use(async (req, _res, next) => {
   if (!req.session.user) {
     return next();
   }
@@ -60,19 +60,19 @@ app.use(pageNotFound);
 async function main() {
   await mongoose.connect(uri);
 
-  const testUser = await User.findOne();
-  if (!testUser) {
-    const user = new User({
-      name: "TestUser1",
-      email: "testuser1@test.url",
-      cart: {
-        items: [],
-      },
-    });
-
-    await user.save();
-  }
-
+  //  const testUser = await User.findOne();
+  //  if (!testUser) {
+  //    const user = new User({
+  //      name: "TestUser1",
+  //      email: "testuser1@test.url",
+  //      cart: {
+  //        items: [],
+  //      },
+  //    });
+  //
+  //    await user.save();
+  //  }
+  //
   app.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}/`);
   });
