@@ -3,32 +3,36 @@ import mongoose from "mongoose";
 const Schema = mongoose.Schema;
 
 const userSchema = new Schema({
-  name: {
-    type: String,
-    required: true,
-  },
-  email: {
-    type: String,
-    required: true,
-  },
-  cart: {
-    items: [
-      {
-        productId: {
-          type: Schema.Types.ObjectId,
-          ref: "products",
-          required: true,
-        },
-        quantity: {
-          type: Number,
-          required: true,
-        },
-      },
-    ],
-  },
+    name: {
+        type: String,
+        required: true,
+    },
+    email: {
+        type: String,
+        required: true,
+    },
+    password: {
+        type: String,
+        required: true,
+    },
+    cart: {
+        items: [
+            {
+                productId: {
+                    type: Schema.Types.ObjectId,
+                    ref: "products",
+                    required: true,
+                },
+                quantity: {
+                    type: Number,
+                    required: true,
+                },
+            },
+        ],
+    },
 });
 
-userSchema.methods.addToCart = async function (product: any) {
+userSchema.methods.addToCart = async function(product: any) {
     try {
         const cartProductIndex = this.cart.items.findIndex((cp: any) => {
             return cp.productId.toString() === product._id.toString();
@@ -58,7 +62,7 @@ userSchema.methods.addToCart = async function (product: any) {
 };
 
 // Method to remove a product from the cart
-userSchema.methods.deleteCart = async function (productId: string) {
+userSchema.methods.deleteCart = async function(productId: string) {
     try {
         const updatedCartItems = this.cart.items.filter((item: any) => {
             return !item._id.equals(productId);
@@ -75,7 +79,7 @@ userSchema.methods.deleteCart = async function (productId: string) {
 };
 
 // Method to clear the cart
-userSchema.methods.clearCart = async function () {
+userSchema.methods.clearCart = async function() {
     try {
         this.cart = { items: [] };
         // Save and return the updated user document
