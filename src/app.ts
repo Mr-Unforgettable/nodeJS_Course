@@ -14,6 +14,7 @@ import pageNotFound from "./routes/404";
 import { User } from "./models/user";
 import { default as connectMongoDBSession } from "connect-mongodb-session";
 
+// Initialize .env file
 dotenv.config();
 
 const app = express();
@@ -37,7 +38,7 @@ app.use(
     resave: false,
     saveUninitialized: false,
     store: store,
-  })
+  }),
 );
 
 // Configure double CSRF
