@@ -3,7 +3,8 @@ import path from "node:path";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import session from "express-session";
-import csrf from "csurf";
+import cookieParser from "cookie-parser";
+import { doubleCsrf } from "csrf-csrf";
 
 import adminRoutes from "./routes/admin";
 import shopRoutes from "./routes/shop";
@@ -23,7 +24,6 @@ const store = new MongoDBStore({
   uri: uri,
   collection: "sessions",
 });
-const csrfProtection = csrf();
 
 // EJS
 app.set("view engine", "ejs");
@@ -40,7 +40,15 @@ app.use(
   })
 );
 
-app.use(csrfProtection);
+// Configure double CSRF
+const csrfProtection = doubleCsrf({
+  getSecret: () => process.env.CSRF_SECRET!,
+  getTokenFromRequest: (req) => req.body._csrf,
+});
+
+// Applying CSRF protection middleware
+app.use(cookieParser(process.env.CSRF_SECRET));
+app.use(csrfProtection.doubleCsrfProtection);
 
 app.use(async (req, _res, next) => {
   if (!req.session.user) {
@@ -55,9 +63,9 @@ app.use(async (req, _res, next) => {
 });
 
 app.use(async (req, res, next) => {
-  (res.locals.isAuthenticated = req.session.isLoggedIn),
-    (res.locals.csrfToken = req.csrfToken()),
-    next();
+  res.locals.isAuthenticated = req.session.isLoggedIn;
+  res.locals.csrfToken = (req.csrfToken as () => string)();
+  next();
 });
 
 app.use("/admin", adminRoutes);
