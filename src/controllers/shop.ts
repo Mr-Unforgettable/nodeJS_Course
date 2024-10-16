@@ -18,7 +18,6 @@ export const getIndex: RequestHandler = async (req, res, _next) => {
     renderPage(res, "shop/index", {
       prods: products,
       pageTitle: "🛍️ Shop",
-      isAuthenticated: req.session.isLoggedIn,
       path: "/",
     });
   } catch (error) {
