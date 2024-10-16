@@ -3,7 +3,7 @@ import path from "node:path";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import session from "express-session";
-import { default as connectMongoDBSession } from "connect-mongodb-session";
+import csrf from "csurf";
 
 import adminRoutes from "./routes/admin";
 import shopRoutes from "./routes/shop";
@@ -11,19 +11,19 @@ import authRoutes from "./routes/auth";
 import pageNotFound from "./routes/404";
 
 import { User } from "./models/user";
+import { default as connectMongoDBSession } from "connect-mongodb-session";
 
 dotenv.config();
 
 const app = express();
 const uri = process.env.URI!;
 const PORT = 3000;
-
 const MongoDBStore = connectMongoDBSession(session);
-
-var store = new MongoDBStore({
+const store = new MongoDBStore({
   uri: uri,
   collection: "sessions",
 });
+const csrfProtection = csrf();
 
 // EJS
 app.set("view engine", "ejs");
@@ -40,6 +40,8 @@ app.use(
   })
 );
 
+app.use(csrfProtection);
+
 app.use(async (req, _res, next) => {
   if (!req.session.user) {
     return next();
@@ -52,6 +54,12 @@ app.use(async (req, _res, next) => {
   next();
 });
 
+app.use(async (req, res, next) => {
+  (res.locals.isAuthenticated = req.session.isLoggedIn),
+    (res.locals.csrfToken = req.csrfToken()),
+    next();
+});
+
 app.use("/admin", adminRoutes);
 app.use(shopRoutes);
 app.use(authRoutes);
@@ -60,19 +68,6 @@ app.use(pageNotFound);
 async function main() {
   await mongoose.connect(uri);
 
-  //  const testUser = await User.findOne();
-  //  if (!testUser) {
-  //    const user = new User({
-  //      name: "TestUser1",
-  //      email: "testuser1@test.url",
-  //      cart: {
-  //        items: [],
-  //      },
-  //    });
-  //
-  //    await user.save();
-  //  }
-  //
   app.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}/`);
   });
