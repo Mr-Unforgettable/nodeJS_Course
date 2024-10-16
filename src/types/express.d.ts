@@ -5,10 +5,11 @@ declare global {
   namespace Express {
     interface Request {
       user?: User;
+      csrfToken?: () => string;
     }
 
-    type csrfToken = {
-      csrfToken: () => string;
-    };
+    // type csrfToken = {
+    //   csrfToken: () => string;
+    // };
   }
 }
