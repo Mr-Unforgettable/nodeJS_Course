@@ -11,7 +11,7 @@ const renderPage = (res: any, view: string, options: any) => {
   res.render(view, options);
 };
 
-export const getIndex: RequestHandler = async (req, res, _next) => {
+export const getIndex: RequestHandler = async (_req, res, _next) => {
   try {
     // Fetching the Products list using fetchAll method.
     const products = await Product.find();

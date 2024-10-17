@@ -7,9 +7,5 @@ declare global {
       user?: User;
       csrfToken?: () => string;
     }
-
-    // type csrfToken = {
-    //   csrfToken: () => string;
-    // };
   }
 }
