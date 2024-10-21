@@ -2,12 +2,14 @@ import { RequestHandler } from "express";
 import { User } from "../models/user";
 import bcrypt from "bcryptjs";
 
-export const getLogin: RequestHandler = async (_req, res, _next) => {
+// getLogin handlerFunction -> It fetches the login page via GET method.
+export const getLogin: RequestHandler = async (req, res, _next) => {
   try {
     res.render("auth/login", {
       pageTitle: "🔐 Login",
       isAuthenticated: false,
       path: "/login",
+      errorMessage: req.flash("error"),
     });
   } catch (error) {
     console.error("failed to open the login page.");
@@ -15,12 +17,14 @@ export const getLogin: RequestHandler = async (_req, res, _next) => {
   }
 };
 
+// postLogin handlerFunction -> It handles the login with POST method
 export const postLogin: RequestHandler = async (req, res, _next) => {
   try {
     const { email, password } = req.body;
     const user = await User.findOne({ email: email });
 
     if (!user) {
+      req.flash("error", "Invalid email or password.");
       res.redirect("/login");
       return;
     }
@@ -28,6 +32,7 @@ export const postLogin: RequestHandler = async (req, res, _next) => {
     const isCorrectPasswd = await bcrypt.compare(password, user.password);
 
     if (!isCorrectPasswd) {
+      req.flash("error", "Invalid email or password");
       res.redirect("/login");
       return;
     }
@@ -38,14 +43,13 @@ export const postLogin: RequestHandler = async (req, res, _next) => {
       console.log(err);
       res.redirect("/");
     });
-
   } catch (error) {
     console.error("failed to login");
     res.status(401).send({ message: "Not Authorized" });
   }
 };
 
-
+// getSignup handlerFunction -> It fetches the signup page via GET method
 export const getSignup: RequestHandler = async (_req, res) => {
   try {
     res.render("auth/signup", {
@@ -59,6 +63,7 @@ export const getSignup: RequestHandler = async (_req, res) => {
   }
 };
 
+// postSignup handlerFunction -> It adds and new user to the web page via POST method
 export const postSignup: RequestHandler = async (req, res) => {
   try {
     const { email, password, confirmPassword } = req.body;
@@ -66,16 +71,16 @@ export const postSignup: RequestHandler = async (req, res) => {
     if (!email || !password || !confirmPassword) {
       res.status(400).send({ message: "Bad Request" });
       return;
-    };
+    }
 
     // Check if the user already exists in the database
     const userEmail = await User.findOne({ email: email });
     if (userEmail) {
-      res.redirect('/signup');
+      res.redirect("/signup");
       return;
     }
 
-    const username = email.split('@')[0];
+    const username = email.split("@")[0];
     const hashedPassword = await bcrypt.hash(password, 12);
 
     const user = new User({
@@ -86,15 +91,16 @@ export const postSignup: RequestHandler = async (req, res) => {
     });
 
     await user.save();
-    res.redirect('/login');
+    res.redirect("/login");
   } catch (error) {
     console.error("failed to create a new user");
     res.status(500).send({
-      message: "Internal Server Error."
+      message: "Internal Server Error.",
     });
   }
 };
 
+// postLogout handlerFunction -> It logs out the user via POST method
 export const postLogout: RequestHandler = async (req, res, _next) => {
   try {
     req.session.destroy(() => {
