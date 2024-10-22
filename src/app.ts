@@ -32,6 +32,7 @@ const store = new MongoDBStore({
 const csrfProtection = doubleCsrf({
   getSecret: () => process.env.CSRF_SECRET!,
   getTokenFromRequest: (req) => req.body._csrf,
+  cookieName: '__DEV-psifi.x-csrf-token',
 });
 
 // EJS
