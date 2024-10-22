@@ -5,11 +5,26 @@ import bcrypt from "bcryptjs";
 // getLogin handlerFunction -> It fetches the login page via GET method.
 export const getLogin: RequestHandler = async (req, res, _next) => {
   try {
+    let errorMessage: string[] | string | null = req.flash('error');
+    if (errorMessage.length > 0) {
+      errorMessage = errorMessage[0]
+    } else {
+      errorMessage = null;
+    }
+
+    let successMessage: string[] | string | null = req.flash('success');
+    if (successMessage.length > 0) {
+      successMessage = successMessage[0];
+    } else {
+      successMessage = null;
+    }
+
     res.render("auth/login", {
       pageTitle: "🔐 Login",
       isAuthenticated: false,
       path: "/login",
-      errorMessage: req.flash("error"),
+      errorMessage: errorMessage,
+      successMessage: successMessage,
     });
   } catch (error) {
     console.error("failed to open the login page.");
@@ -50,12 +65,29 @@ export const postLogin: RequestHandler = async (req, res, _next) => {
 };
 
 // getSignup handlerFunction -> It fetches the signup page via GET method
-export const getSignup: RequestHandler = async (_req, res) => {
+export const getSignup: RequestHandler = async (req, res) => {
   try {
+    let errorMessage: string[] | string | null = req.flash('error');
+    if (errorMessage.length > 0) {
+      errorMessage = errorMessage[0]
+    } else {
+      errorMessage = null;
+    }
+
+    // Could be refactor to make it more seemless
+    let successMessage: string[] | string | null = req.flash('success');
+    if (successMessage.length > 0) {
+      successMessage = successMessage[0];
+    } else {
+      successMessage = null;
+    }
+
     res.render("auth/signup", {
       pageTitle: "📋 Sign Up",
       isAuthenticated: false,
       path: "/signup",
+      successMessage: successMessage,
+      errorMessage: errorMessage,
     });
   } catch (error) {
     console.error("Failed to fetch the signup page.");
@@ -69,6 +101,7 @@ export const postSignup: RequestHandler = async (req, res) => {
     const { email, password, confirmPassword } = req.body;
 
     if (!email || !password || !confirmPassword) {
+      req.flash('error', 'Incomplete sign up form');
       res.status(400).send({ message: "Bad Request" });
       return;
     }
@@ -76,6 +109,7 @@ export const postSignup: RequestHandler = async (req, res) => {
     // Check if the user already exists in the database
     const userEmail = await User.findOne({ email: email });
     if (userEmail) {
+      req.flash('error', 'E-mail address already exists.');
       res.redirect("/signup");
       return;
     }
@@ -91,6 +125,7 @@ export const postSignup: RequestHandler = async (req, res) => {
     });
 
     await user.save();
+    req.flash('success', 'User create successfully');
     res.redirect("/login");
   } catch (error) {
     console.error("failed to create a new user");
